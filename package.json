@@ -1,0 +1,36 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LaSalleGracia-Projectes/servidor-linus-torvalds.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LaSalleGracia-Projectes/servidor-linus-torvalds/issues"
+  },
+  "homepage": "https://github.com/LaSalleGracia-Projectes/servidor-linus-torvalds#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "mongoose": "^6.7.3",
+    "ws": "^8.11.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.12",
+    "@types/dotenv": "^8.2.0",
+    "@types/express": "^4.17.14",
+    "@types/mongoose": "^5.11.97",
+    "@types/ws": "^8.5.3",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
+    "eslint": "^8.28.0"
+  }
+}
