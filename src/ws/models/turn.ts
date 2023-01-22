@@ -4,6 +4,7 @@ export default class Turn {
     readonly playerUid: string
     readonly action: turnAction
     readonly amount?: number
+    public highest?: boolean
     public sendedPong: boolean
 
     constructor(playerUid: string, action: turnAction, amount?: number) {

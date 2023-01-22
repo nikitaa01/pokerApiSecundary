@@ -6,18 +6,7 @@ socket.addEventListener('open', function (_event) {
 socket.addEventListener('message', function (event) {
     console.log(`Recived: ${event.data}`)
     
-    const objToString = (obj) => {
-        return Object.entries(obj)
-            .map(([key, value]) => {
-                if (typeof value === 'object') return `${key}:<br>"${objToString(value)}"`
-                return `${key}: "${value}"`
-            })
-            .join(', ')
-    }
-    
-    const obj = JSON.parse(event.data)
-    const objMsg = objToString(obj)
-    document.getElementById('uid').innerHTML += `<p>Recived: <strong>${objMsg}</strong></p>`
+    document.getElementById('uid').innerHTML += `<p>Recived: <strong>${event.data}</strong></p>`
 })
 
 document.querySelector('form').addEventListener('submit', (e) => {

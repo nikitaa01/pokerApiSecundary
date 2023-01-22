@@ -2,12 +2,18 @@ import { RawData } from 'ws'
 import Lobby from '../interfaces/lobby.interface'
 import Msg from '../interfaces/msg.interface'
 import WsClient from '../interfaces/wsClient.interface'
-import { onConnect, onCreate, onExit, onJoin, onStart } from '../controller/wsEvents.controller'
-import { isExpectedPlayer } from '../controller/game.controller'
+import { onConnect, onCreate, onExit, onJoin, onStart, onDefault } from '../controllers/wsEvents.controller'
+import { isExpectedPlayer } from '../controllers/game.controller'
 import Game from '../models/game'
 
 const lobbies: Lobby[] = []
 
+/**
+ * Forward the menu options, to create, join and etc...
+ * @param msgParsed 
+ * @param wsClient 
+ * @param lobby 
+ */
 const menu = (msgParsed: Msg, wsClient: WsClient, lobby: Lobby | undefined) => {
     switch (msgParsed.menu) {
     case 'CREATE':
@@ -23,6 +29,7 @@ const menu = (msgParsed: Msg, wsClient: WsClient, lobby: Lobby | undefined) => {
         onExit(wsClient, lobbies)
         break
     default:
+        onDefault(wsClient)
         console.log('error')
         break
     }
@@ -31,7 +38,7 @@ const menu = (msgParsed: Msg, wsClient: WsClient, lobby: Lobby | undefined) => {
 const inGameMenu = (msgParsed: Msg, wsClient: WsClient, game: Game) => {
     const { turnAction } = msgParsed
     if (!turnAction) return
-    if (!game.getLastRound().getPotentialActions().includes(turnAction)) return
+    if (!game.getLastRound().getPotentialActions(wsClient.uid).actions.includes(turnAction)) return
     switch (turnAction) {
     case 'BET':
         break
@@ -46,6 +53,10 @@ const inGameMenu = (msgParsed: Msg, wsClient: WsClient, game: Game) => {
     }
 }
 
+/**
+ * This method is used to forward incoming messages.
+ * @param wsClient the user that triggers the events.
+ */
 const router = (wsClient: WsClient) => {
     onConnect(wsClient)
     wsClient.on('message', (msg: RawData) => {
@@ -55,7 +66,7 @@ const router = (wsClient: WsClient) => {
         if (!lobby?.game || !lobby || !isExpectedPlayer(wsClient, lobby)) {
             return
         }
-        inGameMenu
+        inGameMenu(msgParsed, wsClient, lobby.game)
     })
 
     wsClient.on('error', () => {

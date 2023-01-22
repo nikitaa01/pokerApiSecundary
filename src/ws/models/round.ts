@@ -1,10 +1,8 @@
 import Card from "../interfaces/card.interface"
-import Stage from "../interfaces/stage.interface"
-import turnAction from "../types/turnAction"
 import Deck from "./deck"
+import Stage from "./stage"
 
 export default class Round {
-    public rised: boolean
     readonly preflop: Stage
     readonly flop?: Stage
     readonly turn?: Stage
@@ -12,16 +10,33 @@ export default class Round {
     readonly roundDeck: Card[]
 
     constructor(preflop: Stage, numPlayers: number) {
-        this.rised = true
         this.preflop = preflop
         this.roundDeck = Deck.instance.getRoundDeck(numPlayers)
+
     }
 
-    getPotentialActions(): turnAction[] {
-        if (this.rised) {
-            return ['CALL', 'RAISE', 'FOLD']
+    getPotentialActions(playerUid: string) {
+        const thisStage = this.getActualStage()
+        const diference = thisStage.getHighestPersAmount() - thisStage.getPersAmount(playerUid)
+        if (diference) {
+            return {
+                actions: ['CALL', 'RAISE', 'FOLD'],
+                diference
+            }
         }
-        return ['CHECK', 'BET']
+        return { actions: ['CHECK', 'BET'] }
+    }
+
+    getHighestAmount() {
+        return this.getActualStage().turns.find(({ highest }) => highest)
+    }
+
+    // TODO: si se recibe un "raise" entonces ese es highest
+    checkIfHighestAmount(paramAmount: number) {
+        const turn = this.getHighestAmount()
+
+        if (!turn?.highest || !turn.amount) return false
+        return turn.amount > paramAmount
     }
 
     getActualStage() {
