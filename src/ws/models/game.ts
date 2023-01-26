@@ -1,7 +1,6 @@
 import WsClient from "../interfaces/wsClient.interface"
 import getWsClientsUids from "../utils/getWsClientsUid"
 import Round from "./round"
-import Stage from "./stage"
 import Turn from "./turn"
 
 export default class Game {
@@ -10,8 +9,13 @@ export default class Game {
     readonly smallBlind: number
     readonly bigBlind: number
 
-    constructor(activePlayers: WsClient[], smallBlind: number) {
-        this.activePlayers = activePlayers
+    constructor(activePlayers: WsClient[], reward: number) {
+        const persBalance = reward / activePlayers.length
+        const smallBlind = persBalance / 20
+        this.activePlayers = activePlayers.map(player => {
+            player.balance = persBalance
+            return player
+        })
         this.smallBlind = smallBlind
         this.bigBlind = smallBlind * 2
         this.rounds = [this.getNewRound()]
@@ -22,19 +26,17 @@ export default class Game {
         if (!dealer) throw new Error('Game players array is empty')
         this.activePlayers.push(dealer)
         const players = [this.getTurnPlayer(0), this.getTurnPlayer(1)]
-        console.table(getWsClientsUids(this.activePlayers))
+        players[0].lastRaised = false
+        players[1].lastRaised = true
         const round = new Round(
-            new Stage(
-                [
-                    new Turn(
-                        players[0].uid, 'BET', this.smallBlind,
-                    ),
-                    new Turn(
-                        players[1].uid, 'RAISE', this.bigBlind,
-                    ),
-                ],
-                this.smallBlind + this.bigBlind,
-                'preflop',),
+            [
+                new Turn(
+                    players[0].uid, 'BET', this.smallBlind,
+                ),
+                new Turn(
+                    players[1].uid, 'RAISE', this.bigBlind,
+                ),
+            ],
             this.activePlayers.length,
         )
         return round
@@ -54,7 +56,7 @@ export default class Game {
 
     public getTurnPongQueue() {
         const pongQueue = []
-        const noPongTurns = this.getLastRound().getActualStage().turns.filter(({ sendedPong }) => !sendedPong)
+        const noPongTurns = this.getLastRound().getActualStage().filter(({ sendedPong }) => !sendedPong)
         for (const turn of noPongTurns) {
             const msg = this.getTurnPong(turn)
             if (!msg) return
@@ -65,8 +67,11 @@ export default class Game {
 
     public getNextPlayerWarning() {
         const turnPlayer = this.getTurnPlayer()
+        if (turnPlayer.lastRaised === undefined) throw new Error("getNextPlayerWarning func no last raised atribute");
+        const msg = this.getLastRound().getPotentialActions(turnPlayer.uid, turnPlayer.lastRaised)
+        if (!msg) return
         return {
-            wsClient: turnPlayer, status: 'WAITING', msg: this.getLastRound().getPotentialActions(turnPlayer.uid),
+            wsClient: turnPlayer, status: 'WAITING', msg,
         }
     }
 
@@ -77,12 +82,12 @@ export default class Game {
             const cards = [allCards.pop(), allCards.pop()]
             if (cards.includes(undefined)) return
             player.cards = cards
-            cardsToSend.push({ wsClient: player, status: 'PERS_CARD', msg: { cards }})
+            cardsToSend.push({ wsClient: player, status: 'PERS_CARD', msg: { cards } })
         }
         return cardsToSend
     }
 
-    public getTurnPlayer(numTurn: number = this.getLastRound().getActualStage().turns.length) {
+    public getTurnPlayer(numTurn: number = this.getLastRound().getActualStage().length) {
         return this.activePlayers[numTurn % this.activePlayers.length]
     }
 }

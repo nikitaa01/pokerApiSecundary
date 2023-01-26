@@ -3,7 +3,7 @@ import Lobby from '../interfaces/lobby.interface'
 import Msg from '../interfaces/msg.interface'
 import WsClient from '../interfaces/wsClient.interface'
 import { onConnect, onCreate, onExit, onJoin, onStart, onDefault } from '../controllers/wsEvents.controller'
-import { isExpectedPlayer } from '../controllers/game.controller'
+import { isExpectedPlayer, onCall } from '../controllers/game.controller'
 import Game from '../models/game'
 
 const lobbies: Lobby[] = []
@@ -28,6 +28,11 @@ const menu = (msgParsed: Msg, wsClient: WsClient, lobby: Lobby | undefined) => {
     case 'EXIT':
         onExit(wsClient, lobbies)
         break
+    case 'IN_GAME':
+        if (!lobby?.game) throw new Error('No lobby in game')
+        if (!isExpectedPlayer(wsClient, lobby.game)) return
+        inGameMenu(msgParsed, wsClient, lobby.game)
+        break;
     default:
         onDefault(wsClient)
         console.log('error')
@@ -36,13 +41,19 @@ const menu = (msgParsed: Msg, wsClient: WsClient, lobby: Lobby | undefined) => {
 }
 
 const inGameMenu = (msgParsed: Msg, wsClient: WsClient, game: Game) => {
+    const player = game.activePlayers.find(player => player.uid == wsClient.uid)
     const { turnAction } = msgParsed
-    if (!turnAction) return
-    if (!game.getLastRound().getPotentialActions(wsClient.uid).actions.includes(turnAction)) return
+    if (!turnAction || !player) return
+    if (player.lastRaised === undefined) throw new Error("getNextPlayerWarning func no last raised atribute");
+    const wsClientPotentialActions = game.getLastRound().getPotentialActions(player.uid, player.lastRaised)
+    if (!wsClientPotentialActions) return
+    if (!wsClientPotentialActions.actions.includes(turnAction)) return
     switch (turnAction) {
     case 'BET':
         break
     case 'CALL':
+        if (!wsClientPotentialActions.diference) throw new Error("Error not diference and potential action call");
+        onCall(player, game, msgParsed, wsClientPotentialActions.diference)
         break
     case 'CHECK':
         break
@@ -63,10 +74,6 @@ const router = (wsClient: WsClient) => {
         const lobby = lobbies.find(({ gid }) => gid == wsClient.gid)
         const msgParsed = JSON.parse(msg.toString()) as Msg
         menu(msgParsed, wsClient, lobby)
-        if (!lobby?.game || !lobby || !isExpectedPlayer(wsClient, lobby)) {
-            return
-        }
-        inGameMenu(msgParsed, wsClient, lobby.game)
     })
 
     wsClient.on('error', () => {

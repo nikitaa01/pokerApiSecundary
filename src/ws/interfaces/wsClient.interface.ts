@@ -6,4 +6,5 @@ export default interface WsClient extends WebSocket {
     gid: string
     balance?: number
     cards?: (Card | undefined)[]
+    lastRaised?: boolean
 }

@@ -1,12 +1,19 @@
 import Lobby from "../interfaces/lobby.interface"
 import WsClient from "../interfaces/wsClient.interface"
 import Game from "../models/game"
+import Turn from "../models/turn"
 import { clientMsg, lobbyMsg } from "../services/router.service"
 
-const startingGame = (game: Game) => {
+const nextPlayerMsg = (game: Game) => {
+    const waitingCall = game.getNextPlayerWarning()
+    if (!waitingCall) return
+    clientMsg(waitingCall?.wsClient, waitingCall?.status, waitingCall?.msg)
+}
+
+const startingRound = (game: Game) => {
     const dealerPlayer = game.activePlayers[game.activePlayers.length - 1]
     lobbyMsg(game.activePlayers, 'DEALER', { client: dealerPlayer.uid })
-    lobbyMsg(game.activePlayers, 'STAGE', { stage: game.getLastRound().getActualStage().name })
+    lobbyMsg(game.activePlayers, 'STAGE', { stage: game.getLastRound().getActualStageName() })
     const playersCardObj = game.getPersonalCards()
     if (!playersCardObj) throw new Error("Cards not found")
     
@@ -20,17 +27,27 @@ const startingGame = (game: Game) => {
         if (!msg) throw new Error('erro')
         lobbyMsg(msg.wsClients, msg.status, msg.msg)
     }
-    const waitingCall = game.getNextPlayerWarning()
-    clientMsg(waitingCall?.wsClient, waitingCall?.status, waitingCall?.msg)
+    nextPlayerMsg(game)
+
 }
 
-const isExpectedPlayer = ({ uid }: WsClient, lobby: Lobby) => {
-    const { game } = lobby
+const isExpectedPlayer = ({ uid }: WsClient, game: Game) => {
     if (!game) return false
     if (uid != game.getTurnPlayer().uid) return false
     return true
 }
 
-//const onBet = ()
+const onCall = (player: WsClient, game: Game, msgParsed: any, diference: number) => {
+    if (!player.balance) {
+        console.log('no hay dineros')
+        return
+    }
+    const newTurn = new Turn(player.uid, 'CALL', msgParsed.amount)
+    game.getLastRound().getActualStage().push(newTurn)
+    const msg = newTurn.getGroupMsg()
+    msg.balance = player.balance - diference
+    lobbyMsg(game.activePlayers, 'CALL_DONE', newTurn.getGroupMsg())
+    nextPlayerMsg(game)
+}
 
-export { startingGame, isExpectedPlayer }
+export { startingRound, isExpectedPlayer, onCall }

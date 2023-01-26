@@ -55,7 +55,10 @@ export default class Turn {
                 amount: this.amount
             }
         case 'CALL':
-            console.log('hola')
+            return {
+                uid: this.playerUid,
+                amount: this.amount
+            }
             break
         case 'RAISE':
             return {
@@ -66,6 +69,9 @@ export default class Turn {
             console.log('hola')
             break
         }
-        return undefined
+        return {
+            uid: 'tupu',
+            balance: 0
+        }
     }
 }

@@ -4,7 +4,7 @@ import gidGenerator from '../utils/generateGid'
 import { clientMsg, lobbyMsg } from '../services/router.service'
 import getWsClientsUids from '../utils/getWsClientsUid'
 import Game from '../models/game'
-import { startingGame } from './game.controller'
+import { startingRound } from './game.controller'
 
 /* FIXME: uid should be fetched  */
 const onConnect = (wsClient: WsClient) => {
@@ -54,8 +54,8 @@ const onJoin = (lobbies: Lobby[], wsClient: WsClient, gidParam: string) => {
 const onStart = (lobby: Lobby) => {
     const { wsClients } = lobby
     lobbyMsg(wsClients, 'STARTED')
-    lobby.game = new Game(wsClients, 0.5)
-    startingGame(lobby.game)
+    lobby.game = new Game(wsClients, lobby.reward)
+    startingRound(lobby.game)
 }
 
 const onDefault = (wsClient: WsClient) => {
