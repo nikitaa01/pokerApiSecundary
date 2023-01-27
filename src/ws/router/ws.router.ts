@@ -3,7 +3,7 @@ import Lobby from '../interfaces/lobby.interface'
 import Msg from '../interfaces/msg.interface'
 import WsClient from '../interfaces/wsClient.interface'
 import { onConnect, onCreate, onExit, onJoin, onStart, onDefault } from '../controllers/wsEvents.controller'
-import { isExpectedPlayer, onCall } from '../controllers/game.controller'
+import { isExpectedPlayer, onCall, onCheck, setNewStage } from '../controllers/game.controller'
 import Game from '../models/game'
 
 const lobbies: Lobby[] = []
@@ -46,7 +46,9 @@ const inGameMenu = (msgParsed: Msg, wsClient: WsClient, game: Game) => {
     if (!turnAction || !player) return
     if (player.lastRaised === undefined) throw new Error("getNextPlayerWarning func no last raised atribute");
     const wsClientPotentialActions = game.getLastRound().getPotentialActions(player.uid, player.lastRaised)
-    if (!wsClientPotentialActions) return
+    if (!wsClientPotentialActions) {
+        return
+    }
     if (!wsClientPotentialActions.actions.includes(turnAction)) return
     switch (turnAction) {
     case 'BET':
@@ -56,6 +58,7 @@ const inGameMenu = (msgParsed: Msg, wsClient: WsClient, game: Game) => {
         onCall(player, game, msgParsed, wsClientPotentialActions.diference)
         break
     case 'CHECK':
+        onCheck(player, game)
         break
     case 'RAISE':
         break

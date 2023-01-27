@@ -1,17 +1,16 @@
 import WsClient from "../interfaces/wsClient.interface"
-import getWsClientsUids from "../utils/getWsClientsUid"
 import Round from "./round"
 import Turn from "./turn"
 
 export default class Game {
-    readonly activePlayers: WsClient[]
+    public activePlayers: WsClient[]
     readonly rounds: Round[]
     readonly smallBlind: number
     readonly bigBlind: number
 
     constructor(activePlayers: WsClient[], reward: number) {
-        const persBalance = reward / activePlayers.length
-        const smallBlind = persBalance / 20
+        const persBalance = Math.trunc(reward / activePlayers.length)
+        const smallBlind = Math.trunc(persBalance / 20)
         this.activePlayers = activePlayers.map(player => {
             player.balance = persBalance
             return player
@@ -22,11 +21,13 @@ export default class Game {
     }
 
     private getNewRound() {
+        this.resetLastRaised()
         const dealer = this.activePlayers.shift()
         if (!dealer) throw new Error('Game players array is empty')
         this.activePlayers.push(dealer)
         const players = [this.getTurnPlayer(0), this.getTurnPlayer(1)]
-        players[0].lastRaised = false
+        players[0].balance = players[0].balance as number - this.smallBlind 
+        players[1].balance = players[1].balance as number - this.bigBlind 
         players[1].lastRaised = true
         const round = new Round(
             [
@@ -40,6 +41,13 @@ export default class Game {
             this.activePlayers.length,
         )
         return round
+    }
+
+    public resetLastRaised() {
+        this.activePlayers = this.activePlayers.map(player => {
+            player.lastRaised = false
+            return player
+        })
     }
 
     public getLastRound() {

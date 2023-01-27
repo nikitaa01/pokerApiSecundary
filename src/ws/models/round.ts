@@ -12,9 +12,9 @@ export default class Round {
     }
 
     getPotentialActions(playerUid: string, lastRaised: boolean) {
-        if (lastRaised) 
-            /* TODO: arreglar que si es el ultimo que lleve a una funcion que avise y cambie de stage  */
+        if (lastRaised) {
             return
+        }
         const diference = this.getHighestPersAmount() - this.getPersAmount(playerUid)
         if (diference > 0) {
             return {
@@ -49,6 +49,10 @@ export default class Round {
         if (this.stages.length == 2) return 'flop'
         if (this.stages.length == 3) return 'turn'
         return 'river'
+    }
+
+    setNewStage() {
+        this.stages.push([] as Turn[])
     }
 
     groupByUid() {
