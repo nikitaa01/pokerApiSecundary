@@ -72,7 +72,7 @@ export default class Round {
             .reduce((total, { amount }) => {
                 if (!amount)
                     return total
-                return total + amount
+                return Number(total) + Number(amount)
             }, 0) ?? 0
     }
 

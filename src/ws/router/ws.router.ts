@@ -3,7 +3,7 @@ import Lobby from '../interfaces/lobby.interface'
 import Msg from '../interfaces/msg.interface'
 import WsClient from '../interfaces/wsClient.interface'
 import { onConnect, onCreate, onExit, onJoin, onStart, onDefault } from '../controllers/wsEvents.controller'
-import { isExpectedPlayer, onCall, onCheck, setNewStage } from '../controllers/game.controller'
+import { isExpectedPlayer, onCall, onCheck, onRaise } from '../controllers/game.controller'
 import Game from '../models/game'
 
 const lobbies: Lobby[] = []
@@ -17,13 +17,13 @@ const lobbies: Lobby[] = []
 const menu = (msgParsed: Msg, wsClient: WsClient, lobby: Lobby | undefined) => {
     switch (msgParsed.menu) {
     case 'CREATE':
-        !msgParsed.reward || onCreate(lobbies, wsClient, msgParsed.reward)
+        msgParsed.reward && onCreate(lobbies, wsClient, msgParsed.reward)
         break
     case 'JOIN':
-        !msgParsed.gid || onJoin(lobbies, wsClient, msgParsed.gid)
+        msgParsed.gid && onJoin(lobbies, wsClient, msgParsed.gid)
         break
     case 'START':
-        !lobby || onStart(lobby)
+        lobby && onStart(lobby)
         break
     case 'EXIT':
         onExit(wsClient, lobbies)
@@ -55,12 +55,14 @@ const inGameMenu = (msgParsed: Msg, wsClient: WsClient, game: Game) => {
         break
     case 'CALL':
         if (!wsClientPotentialActions.diference) throw new Error("Error not diference and potential action call");
-        onCall(player, game, msgParsed, wsClientPotentialActions.diference)
+        onCall(player, game, wsClientPotentialActions.diference)
         break
     case 'CHECK':
         onCheck(player, game)
         break
     case 'RAISE':
+        if (!wsClientPotentialActions.diference) throw new Error("Error not diference and potential action raise");
+        onRaise(player, msgParsed, wsClientPotentialActions.diference, game)
         break
     case 'FOLD':
         break

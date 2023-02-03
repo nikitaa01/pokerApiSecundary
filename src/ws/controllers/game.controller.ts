@@ -9,7 +9,7 @@ const nextPlayerMsg = (game: Game) => {
         setNewStage(game)
         return
     }
-    clientMsg(waitingCall?.wsClient, waitingCall?.status, waitingCall?.msg)
+    clientMsg(waitingCall.wsClient, waitingCall.status, waitingCall.msg)
 }
 
 const startingRound = (game: Game) => {
@@ -46,31 +46,44 @@ const isExpectedPlayer = ({ uid }: WsClient, game: Game) => {
     return true
 }
 
-const onCall = (player: WsClient, game: Game, msgParsed: any, diference: number) => {
-    if (!player.balance) {
+const onCall = (player: WsClient, game: Game, diference: number) => {
+    if (!player.balance || player.balance < diference) {
         return
     }
-    const newTurn = new Turn(player.uid, 'CALL', msgParsed.amount)
+    const newTurn = new Turn(player.uid, 'CALL', diference)
     game.getLastRound().getActualStage().push(newTurn)
-    const msg = newTurn.getGroupMsg()
     player.balance = player.balance - diference
-    msg.balance = player.balance - diference
     lobbyMsg(game.activePlayers, 'DONE_ACTION', { ...newTurn.getGroupMsg(), action: 'CALL', balance: player.balance })
     nextPlayerMsg(game)
 }
 
 const onCheck = (player: WsClient, game: Game) => {
     if (!player.balance) {
-        console.log('no hay dineros')
         return
     }
     const newTurn = new Turn(player.uid, 'CHECK')
     const actualStage = game.getLastRound().getActualStage()
     if (actualStage.length == 0) player.lastRaised = true
     actualStage.push(newTurn)
-    const msg = newTurn.getGroupMsg()
     lobbyMsg(game.activePlayers, 'DONE_ACTION', { ...newTurn.getGroupMsg(), action: 'CHECK', balance: player.balance })
     nextPlayerMsg(game)
 }
 
-export { startingRound, setNewStage, isExpectedPlayer, onCall, onCheck }
+const onRaise = (player: WsClient, msgParsed: any, diference: number, game: Game) => {
+    if (!player.balance) {
+        return
+    }
+    if (!msgParsed.amount || diference >= msgParsed.amount) {
+        clientMsg(player, 'NOT_DONE_ACTION', { err: 'DIFERENCE IS HIGHER THAN AMOUNT' })
+        return
+    }
+    const newTurn = new Turn(player.uid, 'RAISE', msgParsed.amount)
+    game.resetLastRaised()
+    player.lastRaised = true
+    player.balance = player.balance - msgParsed.amount
+    game.getLastRound().getActualStage().push(newTurn)
+    lobbyMsg(game.activePlayers, 'DONE_ACTION', { ...newTurn.getGroupMsg(), action: 'RAISE', balance: player.balance })
+    nextPlayerMsg(game)
+}
+
+export { startingRound, setNewStage, isExpectedPlayer, onCall, onCheck, onRaise }
