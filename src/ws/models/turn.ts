@@ -16,9 +16,6 @@ export default class Turn {
 
     public getSelfMsg() {
         switch (this.action) {
-        case 'DEALER':
-            console.log('hola')
-            break
         case 'CHECK':
             console.log('hola')
             break
@@ -40,10 +37,6 @@ export default class Turn {
 
     public getGroupMsg() {
         switch (this.action) {
-        case 'DEALER':
-            return {
-                uid: this.playerUid,
-            }
         case 'CHECK':
             return {
                 uid: this.playerUid,

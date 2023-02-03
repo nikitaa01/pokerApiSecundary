@@ -1,4 +1,3 @@
-import Lobby from "../interfaces/lobby.interface"
 import WsClient from "../interfaces/wsClient.interface"
 import Game from "../models/game"
 import Turn from "../models/turn"
@@ -16,7 +15,7 @@ const nextPlayerMsg = (game: Game) => {
 const startingRound = (game: Game) => {
     const dealerPlayer = game.activePlayers[game.activePlayers.length - 1]
     lobbyMsg(game.activePlayers, 'DEALER', { client: dealerPlayer.uid })
-    lobbyMsg(game.activePlayers, 'STAGE', { stage: game.getLastRound().getActualStageName() })
+    lobbyMsg(game.activePlayers, 'NEW_STAGE', { stage: game.getLastRound().getActualStageName() })
     const playersCardObj = game.getPersonalCards()
     if (!playersCardObj) throw new Error("Cards not found")
     
@@ -36,7 +35,8 @@ const startingRound = (game: Game) => {
 const setNewStage = (game: Game) => {
     game.resetLastRaised()
     game.getLastRound().setNewStage()
-    lobbyMsg(game.activePlayers, 'STAGE', { stage: game.getLastRound().getActualStageName() })
+    lobbyMsg(game.activePlayers, 'NEW_STAGE', { stage: game.getLastRound().getActualStageName() })
+    lobbyMsg(game.activePlayers, 'COMMON_CARDS', game.getLastRound().getStageCards())
     nextPlayerMsg(game)
 }
 

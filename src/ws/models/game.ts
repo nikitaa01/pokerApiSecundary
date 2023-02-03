@@ -9,7 +9,7 @@ export default class Game {
     readonly bigBlind: number
 
     constructor(activePlayers: WsClient[], reward: number) {
-        const persBalance = Math.trunc(reward / activePlayers.length)
+        const persBalance = reward
         const smallBlind = Math.trunc(persBalance / 20)
         this.activePlayers = activePlayers.map(player => {
             player.balance = persBalance
@@ -90,7 +90,7 @@ export default class Game {
             const cards = [allCards.pop(), allCards.pop()]
             if (cards.includes(undefined)) return
             player.cards = cards
-            cardsToSend.push({ wsClient: player, status: 'PERS_CARD', msg: { cards } })
+            cardsToSend.push({ wsClient: player, status: 'PERS_CARDS', msg: cards })
         }
         return cardsToSend
     }

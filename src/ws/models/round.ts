@@ -85,4 +85,16 @@ export default class Round {
                 : highest
         }, 0)
     }
+
+    getStageCards() {
+        const cards = this.roundDeck.slice(-5)
+        switch (this.getActualStageName()) {
+        case 'flop':
+            return cards.slice(0, 3)
+        case 'turn':
+            return cards.slice(3, 4)
+        case 'river':
+            return cards.slice(-1)
+        }
+    }
 }
