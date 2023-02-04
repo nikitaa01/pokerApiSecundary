@@ -1,4 +1,5 @@
 import WsClient from "../interfaces/wsClient.interface"
+import getWsClientsUids from "../utils/getWsClientsUid"
 import Round from "./round"
 import Turn from "./turn"
 
@@ -101,7 +102,10 @@ export default class Game {
         return cardsToSend
     }
 
-    public getTurnPlayer(players = this.getLastRound().players, numTurn: number = this.getLastRound().getActualStage().length) {
-        return players[numTurn % players.length]
+    public getTurnPlayer(players = this.getLastRound().players, actualStage = this.getLastRound().getActualStage()) {
+        const numTurns = actualStage
+            .filter(({ playerUid }) => getWsClientsUids(players).includes(playerUid))
+            .length
+        return players[numTurns % players.length]
     }
 }
