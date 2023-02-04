@@ -12,6 +12,7 @@ export default class Game {
         const persBalance = reward
         const smallBlind = Math.trunc(persBalance / 20)
         this.activePlayers = activePlayers.map(player => {
+            player.lastRaised = false
             player.balance = persBalance
             return player
         })
@@ -21,11 +22,10 @@ export default class Game {
     }
 
     private getNewRound() {
-        this.resetLastRaised()
         const dealer = this.activePlayers.shift()
         if (!dealer) throw new Error('Game players array is empty')
         this.activePlayers.push(dealer)
-        const players = [this.getTurnPlayer(0), this.getTurnPlayer(1)]
+        const players = [this.getTurnPlayer(this.activePlayers, 0), this.getTurnPlayer(this.activePlayers, 1)]
         players[0].balance = players[0].balance as number - this.smallBlind 
         players[1].balance = players[1].balance as number - this.bigBlind 
         players[1].lastRaised = true
@@ -38,13 +38,18 @@ export default class Game {
                     players[1].uid, 'RAISE', this.bigBlind,
                 ),
             ],
-            this.activePlayers.length,
+            this.activePlayers,
+            (this.smallBlind * this.bigBlind),
         )
         return round
     }
 
+    public setNewRound() {
+        this.rounds.push(this.getNewRound())
+    }
+
     public resetLastRaised() {
-        this.activePlayers = this.activePlayers.map(player => {
+        this.getLastRound().players = this.getLastRound().players.map(player => {
             player.lastRaised = false
             return player
         })
@@ -55,11 +60,12 @@ export default class Game {
     }
 
     public getTurnPong(turn: Turn) {
-        const player = this.activePlayers.find((wsClient) => wsClient.uid == turn.playerUid)
+        const players = this.getLastRound().players
+        const player = players.find((wsClient) => wsClient.uid == turn.playerUid)
         if (!player) return
         if (turn.amount && player.balance) player.balance - turn.amount
         turn.sendedPong = true
-        return { wsClients: this.activePlayers, status: turn.action, msg: turn.getGroupMsg() }
+        return { wsClients: players, status: turn.action, msg: turn.getGroupMsg() }
     }
 
     public getTurnPongQueue() {
@@ -86,7 +92,7 @@ export default class Game {
     public getPersonalCards() {
         const allCards = this.getLastRound().roundDeck
         const cardsToSend = []
-        for (const player of this.activePlayers) {
+        for (const player of this.getLastRound().players) {
             const cards = [allCards.pop(), allCards.pop()]
             if (cards.includes(undefined)) return
             player.cards = cards
@@ -95,7 +101,7 @@ export default class Game {
         return cardsToSend
     }
 
-    public getTurnPlayer(numTurn: number = this.getLastRound().getActualStage().length) {
-        return this.activePlayers[numTurn % this.activePlayers.length]
+    public getTurnPlayer(players = this.getLastRound().players, numTurn: number = this.getLastRound().getActualStage().length) {
+        return players[numTurn % players.length]
     }
 }

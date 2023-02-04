@@ -3,7 +3,7 @@ import Lobby from '../interfaces/lobby.interface'
 import Msg from '../interfaces/msg.interface'
 import WsClient from '../interfaces/wsClient.interface'
 import { onConnect, onCreate, onExit, onJoin, onStart, onDefault } from '../controllers/wsEvents.controller'
-import { isExpectedPlayer, onCall, onCheck, onRaise } from '../controllers/game.controller'
+import { isExpectedPlayer, onCall, onCheck, onRaise, onFold, onBet } from '../controllers/game.controller'
 import Game from '../models/game'
 
 const lobbies: Lobby[] = []
@@ -41,18 +41,20 @@ const menu = (msgParsed: Msg, wsClient: WsClient, lobby: Lobby | undefined) => {
 }
 
 const inGameMenu = (msgParsed: Msg, wsClient: WsClient, game: Game) => {
-    const player = game.activePlayers.find(player => player.uid == wsClient.uid)
+    const lastRound = game.getLastRound()
+    const player = lastRound.players.find(player => player.uid == wsClient.uid)
     const { turnAction } = msgParsed
     if (!turnAction || !player) return
     if (player.lastRaised === undefined) throw new Error("getNextPlayerWarning func no last raised atribute");
-    const wsClientPotentialActions = game.getLastRound().getPotentialActions(player.uid, player.lastRaised)
+    const wsClientPotentialActions = lastRound.getPotentialActions(player.uid, player.lastRaised)
     if (!wsClientPotentialActions) {
         return
     }
     if (!wsClientPotentialActions.actions.includes(turnAction)) return
     switch (turnAction) {
     case 'BET':
-        break
+        onBet(player, msgParsed, game)
+        return
     case 'CALL':
         if (!wsClientPotentialActions.diference) throw new Error("Error not diference and potential action call");
         onCall(player, game, wsClientPotentialActions.diference)
@@ -65,6 +67,7 @@ const inGameMenu = (msgParsed: Msg, wsClient: WsClient, game: Game) => {
         onRaise(player, msgParsed, wsClientPotentialActions.diference, game)
         break
     case 'FOLD':
+        onFold(player, game)
         break
     }
 }

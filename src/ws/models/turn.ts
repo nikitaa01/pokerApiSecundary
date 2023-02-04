@@ -52,19 +52,15 @@ export default class Turn {
                 uid: this.playerUid,
                 amount: this.amount
             }
-            break
         case 'RAISE':
             return {
                 uid: this.playerUid,
                 amount: this.amount
             }
         case 'FOLD':
-            console.log('hola')
-            break
-        }
-        return {
-            uid: 'tupu',
-            balance: 0
+            return {
+                uid: this.playerUid,
+            }
         }
     }
 }

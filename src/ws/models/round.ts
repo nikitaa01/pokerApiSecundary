@@ -1,14 +1,19 @@
 import Card from "../interfaces/card.interface"
+import WsClient from "../interfaces/wsClient.interface"
 import Deck from "./deck"
 import Turn from "./turn"
 
 export default class Round {
     readonly stages: Turn[][]
     readonly roundDeck: Card[]
+    public players: WsClient[]
+    public amount: number
 
-    constructor(preflop: Turn[], numPlayers: number) {
+    constructor(preflop: Turn[], players: WsClient[], initialAmount: number) {
         this.stages = [preflop]
-        this.roundDeck = Deck.instance.getRoundDeck(numPlayers)
+        this.roundDeck = Deck.instance.getRoundDeck(players.length)
+        this.players = players
+        this.amount = initialAmount
     }
 
     getPotentialActions(playerUid: string, lastRaised: boolean) {
