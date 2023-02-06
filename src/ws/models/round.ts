@@ -34,10 +34,8 @@ export default class Round {
         return this.getActualStage().find(({ highest }) => highest)
     }
 
-    // TODO: si se recibe un "raise" entonces ese es highest
     checkIfHighestAmount(paramAmount: number) {
         const turn = this.getHighestAmount()
-
         if (!turn?.highest || !turn.amount) return false
         return turn.amount > paramAmount
     }
@@ -100,6 +98,13 @@ export default class Round {
             return cards.slice(3, 4)
         case 'river':
             return cards.slice(-1)
+        }
+    }
+
+    getWinner() {
+        const commonCards = this.roundDeck.slice(-5)
+        for (const player of this.players) {
+            
         }
     }
 }

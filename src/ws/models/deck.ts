@@ -14,4 +14,9 @@ export default class Deck {
         }
         return [...deck]
     }
+
+    getCombinationValue(cards: Card[]) {
+        if (cards.length != 7) return false
+        
+    }
 }

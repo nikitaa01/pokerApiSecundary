@@ -40,7 +40,7 @@ export default class Game {
                 ),
             ],
             this.activePlayers,
-            (this.smallBlind * this.bigBlind),
+            (this.smallBlind + this.bigBlind),
         )
         return round
     }
@@ -97,15 +97,19 @@ export default class Game {
             const cards = [allCards.pop(), allCards.pop()]
             if (cards.includes(undefined)) return
             player.cards = cards
-            cardsToSend.push({ wsClient: player, status: 'PERS_CARDS', msg: cards })
+            cardsToSend.push({ wsClient: player, status: 'PERS_CARDS', cards })
         }
         return cardsToSend
     }
 
-    public getTurnPlayer(players = this.getLastRound().players, actualStage = this.getLastRound().getActualStage()) {
-        const numTurns = actualStage
-            .filter(({ playerUid }) => getWsClientsUids(players).includes(playerUid))
-            .length
-        return players[numTurns % players.length]
+    public getTurnPlayer(players = this.getLastRound().players, numTurns = -1) {
+        let numTurnsReturn = numTurns
+        if (numTurnsReturn == -1) {
+            const playersUids = getWsClientsUids(players)
+            numTurnsReturn = this.getLastRound().getActualStage()
+                .filter(({ playerUid }) => playersUids.includes(playerUid))
+                .length
+        }
+        return players[numTurnsReturn % players.length]
     }
 }

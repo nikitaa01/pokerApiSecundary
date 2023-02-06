@@ -3,7 +3,7 @@ import WsClient from "../interfaces/wsClient.interface"
 const sendMsg = (status: string, msg?: object) => {
     return JSON.stringify({
         status,
-        msg,
+        ...(Array.isArray(msg) ? { cards: msg } : msg),
     })
 }
 

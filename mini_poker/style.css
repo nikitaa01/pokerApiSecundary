@@ -10,3 +10,10 @@ body > div {
     justify-content: space-between;
     column-gap: 1rem;
 }
+
+#uid {
+    font-size: 1.2em;
+    display: flex;
+    flex-direction: column-reverse;
+    margin-bottom: auto;
+}

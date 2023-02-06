@@ -17,12 +17,15 @@ const lobbies: Lobby[] = []
 const menu = (msgParsed: Msg, wsClient: WsClient, lobby: Lobby | undefined) => {
     switch (msgParsed.menu) {
     case 'CREATE':
+        if (lobby) return onDefault(wsClient)
         msgParsed.reward && onCreate(lobbies, wsClient, msgParsed.reward)
         break
     case 'JOIN':
+        if (lobby) return onDefault(wsClient)
         msgParsed.gid && onJoin(lobbies, wsClient, msgParsed.gid)
         break
-    case 'START':
+    case 'START': // TODO: si solo hay 1 persona no se puede empezar
+        if (lobby?.game) return onDefault(wsClient)
         lobby && onStart(lobby)
         break
     case 'EXIT':
