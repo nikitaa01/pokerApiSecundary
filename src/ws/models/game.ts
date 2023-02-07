@@ -57,7 +57,7 @@ export default class Game {
     }
 
     public getLastRound() {
-        return this.rounds[this.rounds.length - 1]
+        return this.rounds.at(-1) as Round
     }
 
     public getTurnPong(turn: Turn) {

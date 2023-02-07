@@ -15,7 +15,7 @@ const nextPlayerMsg = (game: Game) => {
 const startingRound = (game: Game) => {
     const lastRound = game.getLastRound()
     const players = lastRound.players
-    const dealerPlayer = players[players.length - 1]
+    const dealerPlayer = players.at(-1) as WsClient
     lobbyMsg(players, 'DEALER', { client: dealerPlayer.uid })
     lobbyMsg(players, 'NEW_STAGE', { stage: lastRound.getActualStageName() })
     const playersCardObj = game.getPersonalCards()
