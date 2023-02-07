@@ -8,89 +8,61 @@ export default class Deck {
     getRoundDeck(numPlayers: number) {
         const deck = new Set<Card>()
         const deckSize = (numPlayers * 2) + 5
-        
+
         while (deck.size != deckSize) {
             deck.add(this.deckCards[Math.floor(Math.random() * 52)])
         }
         return [...deck]
     }
 
+    getIsStraight(cards: number[], n1: number, n2 = n1 + 1, count = 1): number[] | false {
+        if (count == 5) {
+            return cards.slice(n1, n1 + 5)
+        }
+        if (cards[n1] == cards[n2] - count) {
+            return this.getIsStraight(cards, n1, n2 + 1, count + 1)
+        }
+        return false
+    }
+
+    getIsStraightLoop(cards: number[], n1 = 0, n2 = n1 + 1, count = 1, countBackward = 0, forward = true): number[] | false {
+        if (count == 5) {
+            const backwardNum = -1 * countBackward
+            return [
+                ...cards.slice(0, 5 + backwardNum),
+                ...cards.slice(backwardNum)
+            ];
+        }
+        if (forward && cards[n1] == cards[n2] + count) {
+            return this.getIsStraightLoop(cards, n1, n2 + 1, count + 1, countBackward, forward);
+        }
+        if (!forward && cards[n1] == cards.at(n2) as number + (12 - countBackward)) {
+            return this.getIsStraightLoop(cards, n1, n2 - 1, count + 1, countBackward + 1, forward);
+        }
+        if (forward) {
+            return this.getIsStraightLoop(cards, n1, -1, count, countBackward, false)
+        }
+        return false;
+    }
+
     isStraight(cards: Card[]) {
-        const straight = new Set(cards
-            .map(card => card.value))
+        const straight = [...new Set(cards.map((card) => card.value))]
+        for (let i = 0; i < 3; i++) {
+            if (this.getIsStraight(straight, i)) {
+                return cards.slice(i, i + 5)
+            }
+        }
+        if (straight[0] != 2 || straight.at(-1) != 14) {
+            return false
+        }
+        return this.getIsStraightLoop(straight.reverse())
     }
 
     getCombinationValue(cards: Card[]) {
         if (cards.length != 7) return false
-        const cardsSorted = cards.sort((cardA, cardB) => cardA.value - cardB.value)
-        // if (this.isStraight(cardsSorted)) {
-
-        // }
+        const cardsSorted = cards.sort((cardA: Card, cardB: Card) => cardA.value - cardB.value)
+        const isStraight = this.isStraight(cardsSorted)
+        console.log(isStraight)
+        return true
     }
-    // function getIsStraightLineal(cards, n1, n2 = n1 + 1, count = 1) {
-    //     if (count == 5) {
-    //       return cards.slice(n1, 6);
-    //     }
-    //     if (cards[n1] == cards[n2] - count) {
-    //       return getIsStraightLineal(cards, n1, n2 + 1, count + 1);
-    //     }
-    //     return false;
-    //   }
-    //   function getIsStraightReverse() {
-    //     return
-    //   }
-    //   function getIsStraightForward() {
-    //     return
-    //   }
-    //   function isStraight(cards) {
-    //     const straight = [...new Set(cards.map((card) => card.value))];
-    //     if (straight.lenght < 5) {
-    //       return false
-    //     }
-    //     if (cards[0] == 2 && cards[4] != 6) {
-    //       return getIsStraightReverse()
-    //     }
-    //     if (cards.reverse()[0] == 14 && cards.reverse()[4] != 10) {
-    //       return getIsStraightForward()
-    //     }
-    //     let ctrl = false
-    //     for (let i = 0; i < 2; i++) {
-    //        if (getIsStraightLineal(straight, i)) {
-    //          ctrl = true
-    //        }
-    //     }
-    //     return ctrl
-    //   }
-    //   function getCombinationValue(cards) {
-    //     if (cards.length != 7) return false;
-    //     const cardsSorted = cards.sort((cardA, cardB) => cardA.value - cardB.value);
-    //     console.log(this.isStraight(cardsSorted))
-    //   }
-    //   const cards = [
-    //     {
-    //       suit: "heart",
-    //       value: 2,
-    //     },
-    //     {
-    //       suit: "heart",
-    //       value: 2,
-    //     },{
-    //       suit: "heart",
-    //       value: 10,
-    //     },{
-    //       suit: "heart",
-    //       value: 11,
-    //   },{
-    //       suit: "heart",
-    //       value: 12,
-    //   },{
-    //       suit: "heart",
-    //       value: 13,
-    //   }, {
-    //       suit: "heart",
-    //       value: 14,
-    //       },
-    //   ];
-    //   getCombinationValue(cards)
-      
 }

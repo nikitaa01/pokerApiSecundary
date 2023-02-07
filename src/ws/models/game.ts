@@ -82,7 +82,7 @@ export default class Game {
 
     public getNextPlayerWarning() {
         const turnPlayer = this.getTurnPlayer()
-        if (turnPlayer.lastRaised === undefined) throw new Error("getNextPlayerWarning func no last raised atribute");
+        if (turnPlayer.lastRaised === undefined) throw new Error("getNextPlayerWarning func no last raised atribute")
         const msg = this.getLastRound().getPotentialActions(turnPlayer.uid, turnPlayer.lastRaised)
         if (!msg) return
         return {

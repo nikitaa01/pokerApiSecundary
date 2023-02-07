@@ -35,7 +35,7 @@ const menu = (msgParsed: Msg, wsClient: WsClient, lobby: Lobby | undefined) => {
         if (!lobby?.game) throw new Error('No lobby in game')
         if (!isExpectedPlayer(wsClient, lobby.game)) return
         inGameMenu(msgParsed, wsClient, lobby.game)
-        break;
+        break
     default:
         onDefault(wsClient)
         console.log('error')
@@ -48,7 +48,7 @@ const inGameMenu = (msgParsed: Msg, wsClient: WsClient, game: Game) => {
     const player = lastRound.players.find(player => player.uid == wsClient.uid)
     const { turnAction } = msgParsed
     if (!turnAction || !player) return
-    if (player.lastRaised === undefined) throw new Error("getNextPlayerWarning func no last raised atribute");
+    if (player.lastRaised === undefined) throw new Error("getNextPlayerWarning func no last raised atribute")
     const wsClientPotentialActions = lastRound.getPotentialActions(player.uid, player.lastRaised)
     if (!wsClientPotentialActions) {
         return
@@ -59,14 +59,14 @@ const inGameMenu = (msgParsed: Msg, wsClient: WsClient, game: Game) => {
         onBet(player, msgParsed, game)
         return
     case 'CALL':
-        if (!wsClientPotentialActions.diference) throw new Error("Error not diference and potential action call");
+        if (!wsClientPotentialActions.diference) throw new Error("Error not diference and potential action call")
         onCall(player, game, wsClientPotentialActions.diference)
         break
     case 'CHECK':
         onCheck(player, game)
         break
     case 'RAISE':
-        if (!wsClientPotentialActions.diference) throw new Error("Error not diference and potential action raise");
+        if (!wsClientPotentialActions.diference) throw new Error("Error not diference and potential action raise")
         onRaise(player, msgParsed, wsClientPotentialActions.diference, game)
         break
     case 'FOLD':
