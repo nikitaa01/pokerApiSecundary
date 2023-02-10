@@ -28,22 +28,24 @@ const startingRound = (game: Game) => {
     if(!messageQueue) return
     for (const msg of messageQueue) {
         if (!msg) throw new Error('erro')
-        lobbyMsg(msg.wsClients, 'DONE_ACTION', { ...msg.msg, action: msg.status, balance: players.find(p => p.uid == msg.msg.uid)?.balance, amount: lastRound.amount })
+        lobbyMsg(msg.wsClients, 'DONE_ACTION', { ...msg.msg, action: msg.status, balance: players.find(p => p.uid == msg.msg.uid)?.balance, tableAmount: lastRound.amount })
     }
     nextPlayerMsg(game)
 }
 
 const setNewStage = (game: Game) => {
-    const players = game.getLastRound().players
+    const lastRound = game.getLastRound()
+    const players = lastRound.players
     game.resetLastRaised()
-    game.getLastRound().setNewStage()
+    lastRound.setNewStage()
     // TODO: mirar combinacion de cartas, y guardar en la base de datos los resultados
-    if (game.getLastRound().getActualStageName() == 'river') {
-        lobbyMsg(players, 'ROUND_END', { msg: 'WAITING NEW START'})
+    if (lastRound.getActualStageName() == 'river') {
+        lobbyMsg(players, 'ROUND_END', { msg: 'WAITING NEW START' })
+        lastRound.getWinner()
         return
     }
-    lobbyMsg(players, 'NEW_STAGE', { stage: game.getLastRound().getActualStageName() })
-    lobbyMsg(players, 'COMMON_CARDS', game.getLastRound().getStageCards())
+    lobbyMsg(players, 'NEW_STAGE', { stage: lastRound.getActualStageName() })
+    lobbyMsg(players, 'COMMON_CARDS', lastRound.getStageCards())
     nextPlayerMsg(game)
 }
 
@@ -63,7 +65,7 @@ const onCall = (player: WsClient, game: Game, diference: number) => {
     lastRound.getActualStage().push(newTurn)
     lastRound.amount += Number(diference)
     player.balance = player.balance - diference
-    lobbyMsg(players, 'DONE_ACTION', { ...newTurn.getGroupMsg(), action: 'CALL', balance: player.balance, amount: lastRound.amount })
+    lobbyMsg(players, 'DONE_ACTION', { ...newTurn.getGroupMsg(), action: 'CALL', balance: player.balance, tableAmount: lastRound.amount })
     nextPlayerMsg(game)
 }
 
@@ -77,7 +79,7 @@ const onCheck = (player: WsClient, game: Game) => {
     const actualStage = lastRound.getActualStage()
     if (actualStage.length == 0) player.lastRaised = true
     actualStage.push(newTurn)
-    lobbyMsg(players, 'DONE_ACTION', { ...newTurn.getGroupMsg(), action: 'CHECK', balance: player.balance, amount: lastRound.amount })
+    lobbyMsg(players, 'DONE_ACTION', { ...newTurn.getGroupMsg(), action: 'CHECK', balance: player.balance, tableAmount: lastRound.amount })
     nextPlayerMsg(game)
 }
 
@@ -96,8 +98,8 @@ const onRaise = (player: WsClient, msgParsed: any, diference: number, game: Game
     player.lastRaised = true
     player.balance -=  Number(msgParsed.amount)
     lastRound.getActualStage().push(newTurn)
-    lastRound.amount += msgParsed.amount
-    lobbyMsg(players, 'DONE_ACTION', { ...newTurn.getGroupMsg(), action: 'RAISE', balance: player.balance, amount: lastRound.amount })
+    lastRound.amount += Number(msgParsed.amount)
+    lobbyMsg(players, 'DONE_ACTION', { ...newTurn.getGroupMsg(), action: 'RAISE', playerAmount: Number(msgParsed.amount), balance: player.balance, tableAmount: lastRound.amount })
     nextPlayerMsg(game)
 }
 
@@ -116,7 +118,7 @@ const onBet = (player: WsClient, msgParsed: any, game: Game) => {
     player.balance -= Number(msgParsed.amount)
     lastRound.getActualStage().push(newTurn)
     lastRound.amount += Number(msgParsed.amount)
-    lobbyMsg(lastRound.players, 'DONE_ACTION', { ...newTurn.getGroupMsg(), action: 'BET', balance: player.balance, amount: lastRound.amount })
+    lobbyMsg(lastRound.players, 'DONE_ACTION', { ...newTurn.getGroupMsg(), action: 'BET', playerAmount: Number(msgParsed.amount), balance: player.balance, tableAmount: lastRound.amount })
     nextPlayerMsg(game)
 }
 
@@ -124,7 +126,7 @@ const onFold = (player: WsClient, game: Game) => {
     const newTurn = new Turn(player.uid, 'RAISE')
     const lastRound = game.getLastRound()
     const indexPlayer = lastRound.players.findIndex(({ uid }) => uid == player.uid)
-    lobbyMsg(lastRound.players, 'DONE_ACTION', { ...newTurn.getGroupMsg(), action: 'FOLD', amount: lastRound.amount })
+    lobbyMsg(lastRound.players, 'DONE_ACTION', { ...newTurn.getGroupMsg(), action: 'FOLD', tableAmount: lastRound.amount })
     lastRound.players.splice(indexPlayer, 1)
     nextPlayerMsg(game)
 }

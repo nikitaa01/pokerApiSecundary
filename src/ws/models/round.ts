@@ -104,7 +104,9 @@ export default class Round {
     getWinner() {
         const commonCards = this.roundDeck.slice(-5)
         for (const player of this.players) {
-            
+            console.log(player.uid)
+            console.log(player.cards)
+            Deck.getCombinationValue(player.cards?.concat(commonCards) as Card[])
         }
     }
 }

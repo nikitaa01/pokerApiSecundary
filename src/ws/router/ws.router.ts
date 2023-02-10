@@ -36,6 +36,10 @@ const menu = (msgParsed: Msg, wsClient: WsClient, lobby: Lobby | undefined) => {
         if (!isExpectedPlayer(wsClient, lobby.game)) return
         inGameMenu(msgParsed, wsClient, lobby.game)
         break
+    case 'FINISH' as any:
+        if (!lobby?.game) throw new Error('No lobby in game')
+        lobby.game.getLastRound().getWinner()
+        break
     default:
         onDefault(wsClient)
         console.log('error')
@@ -76,7 +80,7 @@ const inGameMenu = (msgParsed: Msg, wsClient: WsClient, game: Game) => {
 }
 
 /**
- * This method is used to forward incoming messages.
+ * This method is used to forward incoming messages. 
  * @param wsClient the user that triggers the events.
  */
 const router = (wsClient: WsClient) => {
