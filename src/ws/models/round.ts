@@ -103,10 +103,23 @@ export default class Round {
 
     getWinner() {
         const commonCards = this.roundDeck.slice(-5)
-        for (const player of this.players) {
-            console.log(player.uid)
-            console.log(player.cards)
-            Deck.getCombinationValue(player.cards?.concat(commonCards) as Card[])
+        const combinations = this.players.map(player => ({
+            player: player.uid,
+            combination: Deck.getCombinationValue(player.cards?.concat(commonCards) as Card[])
+        }))
+        const winners = combinations.reduce((winner, combination) => {
+            if (winner[0].player == combination.player) return winner
+            if (winner[0].combination.herarchy < combination.combination.herarchy) return winner
+            if (winner[0].combination.herarchy > combination.combination.herarchy) return [combination]
+            if (winner[0].combination.highCardCombintation.value > combination.combination.highCardCombintation.value) return winner
+            if (winner[0].combination.highCardCombintation.value < combination.combination.highCardCombintation.value) return [combination]
+            winner.push(combination)
+            return winner
+        }, [combinations[0]])
+            .map(({ player }) => player)
+        return {
+            winners,
+            combinations
         }
     }
 }

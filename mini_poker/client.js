@@ -1,12 +1,15 @@
 const socket = new WebSocket('ws://localhost:3001')
+let i = 0
+
 
 socket.addEventListener('open', function (_event) {
     console.log('okets desde cliente')
 })
 socket.addEventListener('message', function (event) {
     console.log(`Recived: ${event.data}`)
-    
-    document.getElementById('uid').innerHTML += `<div>Recived: <strong>${event.data}</strong></div>`
+    document.getElementById(
+        "uid"
+    ).innerHTML += `<pre><code><span>message n: ${++i}</span>\n${event.data}</code></pre>`;
 })
 
 document.querySelector('form').addEventListener('submit', (e) => {

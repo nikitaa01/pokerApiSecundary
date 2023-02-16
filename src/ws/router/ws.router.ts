@@ -5,6 +5,7 @@ import WsClient from '../interfaces/wsClient.interface'
 import { onConnect, onCreate, onExit, onJoin, onStart, onDefault } from '../controllers/wsEvents.controller'
 import { isExpectedPlayer, onCall, onCheck, onRaise, onFold, onBet } from '../controllers/game.controller'
 import Game from '../models/game'
+import { lobbyMsg } from '../services/router.service'
 
 const lobbies: Lobby[] = []
 
@@ -38,7 +39,7 @@ const menu = (msgParsed: Msg, wsClient: WsClient, lobby: Lobby | undefined) => {
         break
     case 'FINISH' as any:
         if (!lobby?.game) throw new Error('No lobby in game')
-        lobby.game.getLastRound().getWinner()
+        lobbyMsg(lobby.game.getLastRound().players, 'FINISH', lobby.game.getLastRound().getWinner())
         break
     default:
         onDefault(wsClient)
