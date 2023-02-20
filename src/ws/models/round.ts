@@ -111,8 +111,12 @@ export default class Round {
             if (winner[0].player == combination.player) return winner
             if (winner[0].combination.herarchy < combination.combination.herarchy) return winner
             if (winner[0].combination.herarchy > combination.combination.herarchy) return [combination]
-            if (winner[0].combination.highCardCombintation.value > combination.combination.highCardCombintation.value) return winner
-            if (winner[0].combination.highCardCombintation.value < combination.combination.highCardCombintation.value) return [combination]
+            const winnerHighCardsCopy = [...winner[0].combination.highCardValues]
+            for (const value of combination.combination.highCardValues) {
+                const winnerValue = winnerHighCardsCopy?.shift() ?? -1
+                if (winnerValue > value) return winner
+                if (winnerValue < value) return [combination]
+            }
             winner.push(combination)
             return winner
         }, [combinations[0]])

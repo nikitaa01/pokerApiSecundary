@@ -14,51 +14,13 @@ export default class Deck {
             deck.add(this.deckCards[Math.floor(Math.random() * 52)])
         }
         return [...deck]
-        // return [
-        //     {
-        //         suit: 'club',
-        //         value: 12,
-        //     },
-        //     {
-        //         suit: 'club',
-        //         value: 13,
-        //     },
-        //     {
-        //         suit: 'club',
-        //         value: 11,
-        //     },
-        //     {
-        //         suit: 'club',
-        //         value: 14,
-        //     },
-        //     {
-        //         suit: 'club',
-        //         value: 14,
-        //     },
-        //     {
-        //         suit: 'club',
-        //         value: 10,
-        //     },
-        //     {
-        //         suit: 'club',
-        //         value: 9,
-        //     },
-        //     {
-        //         suit: 'spade',
-        //         value: 14,
-        //     },
-        //     {
-        //         suit: 'spade',
-        //         value: 14,
-        //     },
-        // ]
     }
 
     static getIsStraight(cards: Card[], n1: number, n2 = n1 + 1, count = 1): Combination | false {
         if (count == 5) {
             return {
                 combination: cards.slice(n1, n1 + 5).reverse(),
-                highCardCombintation: cards[n1 + 4],
+                highCardValues: [cards[n1 + 4].value],
                 herarchy: 5,
             }
         }
@@ -75,7 +37,7 @@ export default class Deck {
                     ...cards.slice(-1 * (5 - countForward)),
                     ...cards.slice(0, countForward),
                 ],
-                highCardCombintation: cards.at(-1 * (5 - countForward)) as Card,
+                highCardValues: [cards.at(-1 * (5 - countForward))?.value] as number[],
                 herarchy: 5,
             }
         }
@@ -93,45 +55,49 @@ export default class Deck {
 
     static isStraight(cards: Card[]): Combination | false {
         const uniqueValues = new Set()
-        const cardsUnique = cards
-            .sort((cardA: Card, cardB: Card) => cardB.value - cardA.value)
-            .filter(card => {
-                if (!uniqueValues.has(card.value)) {
-                    uniqueValues.add(card.value)
-                    return true
-                }
-                return false
-            })
+        cards.sort((cardA: Card, cardB: Card) => cardB.value - cardA.value)
+        const cardsUnique = cards.filter(card => {
+            if (!uniqueValues.has(card.value)) {
+                uniqueValues.add(card.value)
+                return true
+            }
+            return false
+        })
         if (cardsUnique.length < 6) {
             return false
         }
         for (let i = (cardsUnique.length - 5); i != -1; i--) {
             const isStraightLineal = Deck.getIsStraight([...cardsUnique].reverse(), i)
             if (isStraightLineal) {
+                const maxNotInCombination = cards.filter(c => !isStraightLineal.combination.includes(c)).at(-1)?.value as number
+                isStraightLineal.highCardValues.push(maxNotInCombination)
                 return isStraightLineal
             }
         }
         if (cardsUnique[0].value != 14 || cardsUnique.at(-1)?.value != 2) return false
-        return Deck.getIsStraightLoop(cardsUnique, -1)
+        const isStraightLoop = Deck.getIsStraightLoop(cardsUnique, -1)
+        if (!isStraightLoop) return false
+        const maxNotInCombination = cards.filter(c => !isStraightLoop.combination.includes(c))[0].value
+        isStraightLoop.highCardValues.push(maxNotInCombination)
+        return isStraightLoop
     }
 
     static isRepeat(cards: Card[], nRepeat: number, herarchy: number): Combination | false {
         const uniqueValues = new Set()
-        const cardsUnique = cards
-            .sort((cardA: Card, cardB: Card) => cardB.value - cardA.value)
-            .filter(card => {
-                if (!uniqueValues.has(card.value)) {
-                    uniqueValues.add(card.value)
-                    return true
-                }
-                return false
-            })
+        cards.sort((cardA: Card, cardB: Card) => cardB.value - cardA.value)
+        const cardsUnique = cards.filter(card => {
+            if (!uniqueValues.has(card.value)) {
+                uniqueValues.add(card.value)
+                return true
+            }
+            return false
+        })
         for (const card of cardsUnique) {
             const repeat = cards.filter(c => c.value == card.value).slice(-nRepeat)
             if (repeat.length == nRepeat) {
                 return {
                     combination: repeat,
-                    highCardCombintation: card,
+                    highCardValues: [card.value, cards.filter(c => !repeat.includes(c)).map(c => c.value)[0]],
                     herarchy,
                 }
             }
@@ -150,7 +116,13 @@ export default class Deck {
             if (!pairLow) return false
             return {
                 combination: [...threeOfAKindHigh.combination, ...pairLow.combination],
-                highCardCombintation: threeOfAKindHigh.highCardCombintation,
+                highCardValues: [
+                    threeOfAKindHigh.highCardValues[0],
+                    pairLow.highCardValues[0],
+                    threeOfAKindHigh.highCardValues[1] > pairLow.highCardValues[1] && pairLow.highCardValues[0] != threeOfAKindHigh.highCardValues[1]
+                        ? threeOfAKindHigh.highCardValues[1]
+                        : pairLow.highCardValues[1],
+                ],
                 herarchy: 3,
             }
         }
@@ -160,7 +132,13 @@ export default class Deck {
             if (!threeOfAKindLow) return false
             return {
                 combination: [...threeOfAKindLow.combination, ...pairHigh.combination],
-                highCardCombintation: threeOfAKindLow.highCardCombintation,
+                highCardValues: [
+                    threeOfAKindLow.highCardValues[0],
+                    pairHigh.highCardValues[0],
+                    pairHigh.highCardValues[1] > threeOfAKindLow.highCardValues[1] && threeOfAKindLow.highCardValues[0] != pairHigh.highCardValues[1]
+                        ? pairHigh.highCardValues[1]
+                        : threeOfAKindLow.highCardValues[1],
+                ],
                 herarchy: 3,
             }
         }
@@ -183,7 +161,7 @@ export default class Deck {
             if (flush.length === 5) {
                 return {
                     combination: flush,
-                    highCardCombintation: flush[0],
+                    highCardValues: flush.map(c => c.value),
                     herarchy: 4,
                 }
             }
@@ -202,7 +180,13 @@ export default class Deck {
             if (!pairLow) return false
             return {
                 combination: [...pairHigh.combination, ...pairLow.combination],
-                highCardCombintation: pairHigh.highCardCombintation,
+                highCardValues: [
+                    pairHigh.highCardValues[0],
+                    pairLow.highCardValues[0],
+                    pairHigh.highCardValues[1] > pairLow.highCardValues[1] && pairLow.highCardValues[0] != pairHigh.highCardValues[1]
+                        ? pairLow.highCardValues[1]
+                        : pairHigh.highCardValues[1],
+                ],
                 herarchy: 7,
             }
         }
@@ -218,7 +202,7 @@ export default class Deck {
         if (isStraight) {
             const isStraightFlush = Deck.isFlush(isStraight.combination)
             if (isStraightFlush) {
-                if (isStraightFlush.highCardCombintation.value == 14) {
+                if (isStraightFlush.highCardValues[0] == 14) {
                     isStraightFlush.herarchy = 0
                     return isStraightFlush
                 }
@@ -252,7 +236,7 @@ export default class Deck {
         if (isPair) {
             return isPair
         }
-        const higherCard = cards.sort((cardA: Card, cardB: Card) => cardB.value - cardA.value)[0]
-        return { combination: [higherCard], highCardCombintation: higherCard, herarchy: 9 }
+        const higherCards = cards.sort((cardA: Card, cardB: Card) => cardB.value - cardA.value)
+        return { combination: [higherCards[0]], highCardValues: higherCards, herarchy: 9 }
     }
 }

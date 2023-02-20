@@ -26,7 +26,6 @@ const menu = (msgParsed: Msg, wsClient: WsClient, lobby: Lobby | undefined) => {
         msgParsed.gid && onJoin(lobbies, wsClient, msgParsed.gid)
         break
     case 'START': // TODO: si solo hay 1 persona no se puede empezar
-        if (lobby?.game) return onDefault(wsClient)
         lobby && onStart(lobby)
         break
     case 'EXIT':

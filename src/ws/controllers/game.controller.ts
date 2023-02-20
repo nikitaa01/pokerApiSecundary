@@ -38,10 +38,22 @@ const setNewStage = (game: Game) => {
     const players = lastRound.players
     game.resetLastRaised()
     lastRound.setNewStage()
-    // TODO: mirar combinacion de cartas, y guardar en la base de datos los resultados
+    // TODO: guardar en la base de datos los resultados
     if (lastRound.getActualStageName() == 'river') {
-        lobbyMsg(players, 'ROUND_END', { msg: 'WAITING NEW START' })
-        lastRound.getWinner()
+        const winnerRes = lastRound.getWinner();
+        const eachWinnerProffit = lastRound.amount / winnerRes.winners.length
+        winnerRes.winners.forEach(winner => {
+            const player = game.activePlayers.find(p => p.uid == winner);
+            if (!player || !player.balance) return
+            player.balance += eachWinnerProffit;
+        });
+        lobbyMsg(game.getLastRound().players, 'FINISH', {
+            winners: winnerRes.winners.map(winner => ({
+                uid: winner,
+                proffit: eachWinnerProffit,
+            })),
+            combinations: winnerRes.combinations,
+        });
         return
     }
     lobbyMsg(players, 'NEW_STAGE', { stage: lastRound.getActualStageName() })

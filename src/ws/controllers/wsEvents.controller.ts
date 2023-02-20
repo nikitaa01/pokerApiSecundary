@@ -54,7 +54,11 @@ const onJoin = (lobbies: Lobby[], wsClient: WsClient, gidParam: string) => {
 const onStart = (lobby: Lobby) => {
     const { wsClients } = lobby
     lobbyMsg(wsClients, 'STARTED')
-    lobby.game = new Game(wsClients, lobby.reward)
+    if (!lobby.game) {
+        lobby.game = new Game(wsClients, lobby.reward)
+    } else {
+        lobby.game.rounds.push(lobby.game.getNewRound())
+    }
     startingRound(lobby.game)
 }
 

@@ -5,7 +5,7 @@ import Turn from "./turn"
 
 export default class Game {
     public activePlayers: WsClient[]
-    readonly rounds: Round[]
+    public rounds: Round[]
     readonly smallBlind: number
     readonly bigBlind: number
 
@@ -22,7 +22,7 @@ export default class Game {
         this.rounds = [this.getNewRound()]
     }
 
-    private getNewRound() {
+    public getNewRound() {
         const dealer = this.activePlayers.shift()
         if (!dealer) throw new Error('Game players array is empty')
         this.activePlayers.push(dealer)
