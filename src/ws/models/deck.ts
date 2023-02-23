@@ -69,16 +69,16 @@ export default class Deck {
         for (let i = (cardsUnique.length - 5); i != -1; i--) {
             const isStraightLineal = Deck.getIsStraight([...cardsUnique].reverse(), i)
             if (isStraightLineal) {
-                const maxNotInCombination = cards.filter(c => !isStraightLineal.combination.includes(c)).at(-1)?.value as number
-                isStraightLineal.highCardValues.push(maxNotInCombination)
+                const maxNotInCombination = cards.filter(c => !isStraightLineal.combination.includes(c)).slice(-2).map(c => c.value)
+                isStraightLineal.highCardValues.push(...maxNotInCombination)
                 return isStraightLineal
             }
         }
         if (cardsUnique[0].value != 14 || cardsUnique.at(-1)?.value != 2) return false
         const isStraightLoop = Deck.getIsStraightLoop(cardsUnique, -1)
         if (!isStraightLoop) return false
-        const maxNotInCombination = cards.filter(c => !isStraightLoop.combination.includes(c))[0].value
-        isStraightLoop.highCardValues.push(maxNotInCombination)
+        const maxNotInCombination = cards.filter(c => !isStraightLoop.combination.includes(c)).map(c => c.value).slice(0, 2)
+        isStraightLoop.highCardValues.push(...maxNotInCombination)
         return isStraightLoop
     }
 
@@ -97,7 +97,7 @@ export default class Deck {
             if (repeat.length == nRepeat) {
                 return {
                     combination: repeat,
-                    highCardValues: [card.value, cards.filter(c => !repeat.includes(c)).map(c => c.value)[0]],
+                    highCardValues: [card.value, ...cards.filter(c => !repeat.includes(c)).map(c => c.value).slice(0, 3)],
                     herarchy,
                 }
             }
@@ -119,9 +119,7 @@ export default class Deck {
                 highCardValues: [
                     threeOfAKindHigh.highCardValues[0],
                     pairLow.highCardValues[0],
-                    threeOfAKindHigh.highCardValues[1] > pairLow.highCardValues[1] && pairLow.highCardValues[0] != threeOfAKindHigh.highCardValues[1]
-                        ? threeOfAKindHigh.highCardValues[1]
-                        : pairLow.highCardValues[1],
+                    ...cards.filter(c => !threeOfAKindHigh.combination.includes(c) && !pairLow.combination.includes(c)).map(c => c.value).slice(0, 2),
                 ],
                 herarchy: 3,
             }
@@ -135,9 +133,7 @@ export default class Deck {
                 highCardValues: [
                     threeOfAKindLow.highCardValues[0],
                     pairHigh.highCardValues[0],
-                    pairHigh.highCardValues[1] > threeOfAKindLow.highCardValues[1] && threeOfAKindLow.highCardValues[0] != pairHigh.highCardValues[1]
-                        ? pairHigh.highCardValues[1]
-                        : threeOfAKindLow.highCardValues[1],
+                    ...cards.filter(c => !threeOfAKindLow.combination.includes(c) && !pairHigh.combination.includes(c)).map(c => c.value).slice(0, 2),
                 ],
                 herarchy: 3,
             }
@@ -161,7 +157,7 @@ export default class Deck {
             if (flush.length === 5) {
                 return {
                     combination: flush,
-                    highCardValues: flush.map(c => c.value),
+                    highCardValues: [...flush.map(c => c.value), ...cards.filter(c => !flush.includes(c)).map(c => c.value).slice(0, 2)],
                     herarchy: 4,
                 }
             }
@@ -183,9 +179,7 @@ export default class Deck {
                 highCardValues: [
                     pairHigh.highCardValues[0],
                     pairLow.highCardValues[0],
-                    pairHigh.highCardValues[1] > pairLow.highCardValues[1] && pairLow.highCardValues[0] != pairHigh.highCardValues[1]
-                        ? pairLow.highCardValues[1]
-                        : pairHigh.highCardValues[1],
+                    ...cards.filter(c => !pairHigh.combination.includes(c) && !pairLow.combination.includes(c)).map(c => c.value).slice(0, 3),
                 ],
                 herarchy: 7,
             }
@@ -237,6 +231,6 @@ export default class Deck {
             return isPair
         }
         const higherCards = cards.sort((cardA: Card, cardB: Card) => cardB.value - cardA.value)
-        return { combination: [higherCards[0]], highCardValues: higherCards, herarchy: 9 }
+        return { combination: [higherCards[0]], highCardValues: higherCards.map(c => c.value), herarchy: 9 }
     }
 }

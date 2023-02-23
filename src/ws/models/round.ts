@@ -107,6 +107,13 @@ export default class Round {
             player: player.uid,
             combination: Deck.getCombinationValue(player.cards?.concat(commonCards) as Card[])
         }))
+        /* FIXME: borrar los cns */
+        console.log('------------------')
+        for (const iterator of combinations) {
+            console.log(this.players.find(({ uid }) => uid == iterator.player)?.cards?.concat(commonCards))
+            console.log(iterator.player)
+            console.log(iterator.combination)
+        }
         const winners = combinations.reduce((winner, combination) => {
             if (winner[0].player == combination.player) return winner
             if (winner[0].combination.herarchy < combination.combination.herarchy) return winner
@@ -121,6 +128,7 @@ export default class Round {
             return winner
         }, [combinations[0]])
             .map(({ player }) => player)
+        console.log('winners', winners)
         return {
             winners,
             combinations
