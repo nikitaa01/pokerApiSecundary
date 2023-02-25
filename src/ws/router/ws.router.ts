@@ -3,9 +3,9 @@ import Lobby from '../interfaces/lobby.interface'
 import Msg from '../interfaces/msg.interface'
 import WsClient from '../interfaces/wsClient.interface'
 import { onConnect, onCreate, onExit, onJoin, onStart, onDefault } from '../controllers/wsEvents.controller'
-import { isExpectedPlayer, onCall, onCheck, onRaise, onFold, onBet } from '../controllers/game.controller'
+import { isExpectedPlayer, onCall, onCheck, onRaise, onFold, onBet, onExitGame } from '../controllers/game.controller'
 import Game from '../models/game'
-import { lobbyMsg } from '../services/router.service'
+import { clientMsg, lobbyMsg } from '../services/router.service'
 
 const lobbies: Lobby[] = []
 
@@ -29,7 +29,8 @@ const menu = (msgParsed: Msg, wsClient: WsClient, lobby: Lobby | undefined) => {
         lobby && onStart(lobby)
         break
     case 'EXIT':
-        onExit(wsClient, lobbies)
+        if (!lobby) return onDefault(wsClient)
+        onExit(wsClient, lobbies, lobby)
         break
     case 'IN_GAME':
         if (!lobby?.game) throw new Error('No lobby in game')
@@ -86,17 +87,28 @@ const inGameMenu = (msgParsed: Msg, wsClient: WsClient, game: Game) => {
 const router = (wsClient: WsClient) => {
     onConnect(wsClient)
     wsClient.on('message', (msg: RawData) => {
-        const lobby = lobbies.find(({ gid }) => gid == wsClient.gid)
-        const msgParsed = JSON.parse(msg.toString()) as Msg
-        menu(msgParsed, wsClient, lobby)
+        try {
+            const lobby = lobbies.find(({ gid }) => gid == wsClient.gid)
+            const msgParsed = JSON.parse(msg.toString()) as Msg
+            menu(msgParsed, wsClient, lobby)
+        } catch (error: any) {
+            clientMsg(wsClient, 'ERROR', {error: error.message})
+            console.log(error.message)
+        }
     })
 
     wsClient.on('error', () => {
-        onExit(wsClient, lobbies)
+        const lobby = lobbies.find(({ gid }) => gid == wsClient.gid)
+        if (!lobby) return
+        onExit(wsClient, lobbies, lobby)
+        lobby?.game && onExitGame(wsClient, lobby)
     })
 
     wsClient.on('close', () => {
-        onExit(wsClient, lobbies)
+        const lobby = lobbies.find(({ gid }) => gid == wsClient.gid)
+        if (!lobby) return
+        onExit(wsClient, lobbies, lobby)
+        onExitGame(wsClient, lobby)
     })
 }
 

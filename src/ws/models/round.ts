@@ -101,6 +101,15 @@ export default class Round {
         }
     }
 
+    public getLowerPlayerBalance() {
+        return this.players.reduce((lower, player) => {
+            const lowerBalance = lower.balance ?? 0
+            const currentBalance = player.balance ?? 0
+            if (currentBalance < lowerBalance) return player
+            return lower
+        })
+    }
+
     getWinner() {
         const commonCards = this.roundDeck.slice(-5)
         const combinations = this.players.map(player => ({

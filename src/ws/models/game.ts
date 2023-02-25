@@ -85,8 +85,13 @@ export default class Game {
         if (turnPlayer.lastRaised === undefined) throw new Error("getNextPlayerWarning func no last raised atribute")
         const msg = this.getLastRound().getPotentialActions(turnPlayer.uid, turnPlayer.lastRaised)
         if (!msg) return
+        /* TODO: refractorizar como sacar el lowerPlayerBalance */
+        const lastRound = this.getLastRound()
+        const lowerPlayerBalance = lastRound.getLowerPlayerBalance()
+        const lowerPlayerDiference = lastRound.getHighestPersAmount() - lastRound.getPersAmount(lowerPlayerBalance.uid)
+        const maxAmount = (lowerPlayerBalance.balance ?? 0 - lowerPlayerDiference) + lastRound.getHighestPersAmount() - lastRound.getPersAmount(turnPlayer.uid)
         return {
-            wsClient: turnPlayer, status: 'WAITING', msg,
+            wsClient: turnPlayer, status: 'WAITING', msg: {...msg, maxAmount, balance: turnPlayer.balance },
         }
     }
 
@@ -111,5 +116,9 @@ export default class Game {
                 .length
         }
         return players[numTurnsReturn % players.length]
+    }
+
+    public checkIfGameEnd() {
+        return this.activePlayers.length == 1
     }
 }

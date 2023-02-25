@@ -57,7 +57,8 @@ const onStart = (lobby: Lobby) => {
     if (!lobby.game) {
         lobby.game = new Game(wsClients, lobby.reward)
     } else {
-        lobby.game.rounds.push(lobby.game.getNewRound())
+        if (lobby.game.getLastRound().getActualStageName() != 'river') return
+        lobby.game.setNewRound()
     }
     startingRound(lobby.game)
 }
@@ -68,18 +69,16 @@ const onDefault = (wsClient: WsClient) => {
     })
 }
 
-const onExit = (wsClient: WsClient, lobbies: Lobby[]) => {
-    const lobby = lobbies.find(({ gid }) => gid == wsClient.gid)
-    if (lobby == undefined) return
+const onExit = (wsClient: WsClient, lobbies: Lobby[], lobby: Lobby) => {
     const { wsClients } = lobby
     const wsClientI = wsClients.findIndex(({ uid }) => uid == wsClient.uid)
     if (wsClientI == -1) return
-    if (wsClients.length == 1) {
+    const { uid: client } = wsClients[wsClientI]
+    wsClients.splice(wsClientI, 1)
+    if (wsClients.length == 0) {
         lobbies.splice(lobbies.indexOf(lobby), 1)
         return
     }
-    const { uid: client } = wsClients[wsClientI]
-    wsClients.splice(wsClientI, 1)
     const wsClientsUids = getWsClientsUids(wsClients)
     lobbyMsg(wsClients, 'EXITED', { clients: wsClientsUids, client })
 }

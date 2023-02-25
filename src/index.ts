@@ -10,6 +10,7 @@ const wss = new WebSocket.Server({ server })
 dotenvConfig()
 
 wss.on('connection', router)
+/* TODO: al cerrarse el servidor, avisar a todas las lobbies */
 
 app.get('/api', (_req, res) => res.send('hola'))
 
