@@ -8,7 +8,9 @@ import { clientMsg, lobbyMsg } from "../services/router.service"
 const nextPlayerMsg = (game: Game) => {
     const waitingCall = game.getNextPlayerWarning()
     if (waitingCall?.msg.balance == 0) {
-        game.getTurnPlayer().close()
+        const turnPlayer = game.getTurnPlayer()
+        turnPlayer.close()
+        lobbyMsg(game.getLastRound().players, 'LOSE', { uid: turnPlayer.uid })
     }
     if (!waitingCall) {
         setNewStage(game)
@@ -150,6 +152,7 @@ const onBet = (player: WsClient, msgParsed: any, game: Game) => {
     nextPlayerMsg(game)
 }
 
+// FIXME: Arreglar el unfold para que cuando sea nueva ronda pueda volver a participar el que se ha hecho fold
 const onFold = (player: WsClient, game: Game) => {
     const newTurn = new Turn(player.uid, 'RAISE')
     const lastRound = game.getLastRound()

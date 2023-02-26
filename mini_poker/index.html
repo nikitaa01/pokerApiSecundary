@@ -12,31 +12,41 @@
     <main>
         <form action="" method="get">
             <div>
-                <select name="menu">
-                    <option value="CREATE">create</option>
-                    <option value="JOIN">join</option>
-                    <option value="START">start</option>
-                    <option value="IN_GAME">in game</option>
-                </select>
+                <label>
+                    Menu<br>
+                    <input type="radio" name="menu" value="CREATE"> create 
+                    <input type="radio" name="menu" value="JOIN"> join 
+                    <input type="radio" name="menu" value="START"> start 
+                    <input type="radio" name="menu" value="IN_GAME"> in game 
+                </label>
             </div>
             <div>
-                <input type="text" placeholder="Grup" name="gid">
+                <label>
+                    Lobby<br>
+                    <input type="text" placeholder="Lobby" name="gid">
+                </label>
             </div>
             <div>
-                <input type="number" placeholder="Reward" name="reward">
+                <label for="reward">
+                    Reward<br>
+                    <input type="number" placeholder="Reward" value="1000" name="reward">
+                </label>
             </div>
             <div>
-                <select name="turnAction">
-                    <option value="">-- turn actions --</option>
-                    <option value="CALL">call</option>
-                    <option value="CHECK">check</option>
-                    <option value="RAISE">raise</option>
-                    <option value="BET">bet</option>
-                    <option value="FOLD">fold</option>
-                </select>
+                <label>
+                    Turn action<br>
+                    <input type="radio" name="turnAction" value="CALL"> call 
+                    <input type="radio" name="turnAction" value="CHECK"> check 
+                    <input type="radio" name="turnAction" value="RAISE"> raise 
+                    <input type="radio" name="turnAction" value="BET"> bet 
+                    <input type="radio" name="turnAction" value="FOLD"> fold 
+                </label>
             </div>
             <div>
-                <input type="text" placeholder="Amount" name="amount">
+                <label>
+                    Amount<br>
+                    <input type="text" placeholder="Amount" name="amount">
+                </label>
             </div>
             <div>
                 <input type="submit" value="submit">
