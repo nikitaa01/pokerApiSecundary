@@ -15,4 +15,4 @@ wss.on('connection', router)
 app.get('/api', (_req, res) => res.send('hola'))
 
 app.listen(process.env.PORT_REST, () => console.log(`api rest running on port ${process.env.PORT_REST}`))
-server.listen(process.env.PORT_WS, () => console.log(`api ws running on port ${process.env.PORT_WS}`))
+server.listen(process.env.PORT, () => console.log(`api ws running on port ${process.env.PORT}`))
