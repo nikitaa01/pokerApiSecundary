@@ -29,7 +29,7 @@ class Round {
     }
     checkIfHighestAmount(paramAmount) {
         const turn = this.getHighestAmount();
-        if (!turn?.highest || !turn.amount)
+        if (!(turn === null || turn === void 0 ? void 0 : turn.highest) || !turn.amount)
             return false;
         return turn.amount > paramAmount;
     }
@@ -64,14 +64,13 @@ class Round {
         }, []);
     }
     getPersAmount(playerUidToFind) {
+        var _a, _b;
         const groupedTurns = this.groupByUid();
-        return groupedTurns.find(({ playerUid }) => playerUid == playerUidToFind)
-            ?.turns
-            .reduce((total, { amount }) => {
+        return (_b = (_a = groupedTurns.find(({ playerUid }) => playerUid == playerUidToFind)) === null || _a === void 0 ? void 0 : _a.turns.reduce((total, { amount }) => {
             if (!amount)
                 return total;
             return Number(total) + Number(amount);
-        }, 0) ?? 0;
+        }, 0)) !== null && _b !== void 0 ? _b : 0;
     }
     getHighestPersAmount() {
         const groupedTurns = this.groupByUid();
@@ -95,27 +94,33 @@ class Round {
     }
     getLowerPlayerBalance() {
         return this.players.reduce((lower, player) => {
-            const lowerBalance = lower.balance ?? 0;
-            const currentBalance = player.balance ?? 0;
+            var _a, _b;
+            const lowerBalance = (_a = lower.balance) !== null && _a !== void 0 ? _a : 0;
+            const currentBalance = (_b = player.balance) !== null && _b !== void 0 ? _b : 0;
             if (currentBalance < lowerBalance)
                 return player;
             return lower;
         });
     }
     getWinner() {
+        var _a, _b;
         const commonCards = this.roundDeck.slice(-5);
-        const combinations = this.players.map(player => ({
-            player: player.uid,
-            combination: deck_1.default.getCombinationValue(player.cards?.concat(commonCards))
-        }));
+        const combinations = this.players.map(player => {
+            var _a;
+            return ({
+                player: player.uid,
+                combination: deck_1.default.getCombinationValue((_a = player.cards) === null || _a === void 0 ? void 0 : _a.concat(commonCards))
+            });
+        });
         /* FIXME: borrar los cns */
         console.log('------------------');
         for (const iterator of combinations) {
-            console.log(this.players.find(({ uid }) => uid == iterator.player)?.cards?.concat(commonCards));
+            console.log((_b = (_a = this.players.find(({ uid }) => uid == iterator.player)) === null || _a === void 0 ? void 0 : _a.cards) === null || _b === void 0 ? void 0 : _b.concat(commonCards));
             console.log(iterator.player);
             console.log(iterator.combination);
         }
         const winners = combinations.reduce((winner, combination) => {
+            var _a;
             if (winner[0].player == combination.player)
                 return winner;
             if (winner[0].combination.herarchy < combination.combination.herarchy)
@@ -124,7 +129,7 @@ class Round {
                 return [combination];
             const winnerHighCardsCopy = [...winner[0].combination.highCardValues];
             for (const value of combination.combination.highCardValues) {
-                const winnerValue = winnerHighCardsCopy?.shift() ?? -1;
+                const winnerValue = (_a = winnerHighCardsCopy === null || winnerHighCardsCopy === void 0 ? void 0 : winnerHighCardsCopy.shift()) !== null && _a !== void 0 ? _a : -1;
                 if (winnerValue > value)
                     return winner;
                 if (winnerValue < value)

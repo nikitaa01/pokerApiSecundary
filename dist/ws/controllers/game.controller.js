@@ -8,7 +8,7 @@ const turn_1 = __importDefault(require("../models/turn"));
 const router_service_1 = require("../services/router.service");
 const nextPlayerMsg = (game) => {
     const waitingCall = game.getNextPlayerWarning();
-    if (waitingCall?.msg.balance == 0) {
+    if ((waitingCall === null || waitingCall === void 0 ? void 0 : waitingCall.msg.balance) == 0) {
         const turnPlayer = game.getTurnPlayer();
         turnPlayer.close();
         (0, router_service_1.lobbyMsg)(game.getLastRound().players, 'LOSE', { uid: turnPlayer.uid });
@@ -20,6 +20,7 @@ const nextPlayerMsg = (game) => {
     (0, router_service_1.clientMsg)(waitingCall.wsClient, waitingCall.status, waitingCall.msg);
 };
 const startingRound = (game) => {
+    var _a;
     const lastRound = game.getLastRound();
     console.log('starting round', lastRound.players.length);
     const players = lastRound.players;
@@ -40,7 +41,7 @@ const startingRound = (game) => {
     for (const msg of messageQueue) {
         if (!msg)
             throw new Error('erro');
-        (0, router_service_1.lobbyMsg)(msg.wsClients, 'DONE_ACTION', { ...msg.msg, action: msg.status, balance: players.find(p => p.uid == msg.msg.uid)?.balance, tableAmount: lastRound.amount });
+        (0, router_service_1.lobbyMsg)(msg.wsClients, 'DONE_ACTION', Object.assign(Object.assign({}, msg.msg), { action: msg.status, balance: (_a = players.find(p => p.uid == msg.msg.uid)) === null || _a === void 0 ? void 0 : _a.balance, tableAmount: lastRound.amount }));
     }
     nextPlayerMsg(game);
 };
@@ -55,8 +56,9 @@ const setNewStage = (game) => {
         const winnerRes = lastRound.getWinner();
         const eachWinnerProffit = lastRound.amount / winnerRes.winners.length;
         game.activePlayers = game.activePlayers.map(p => {
+            var _a;
             if (winnerRes.winners.includes(p.uid)) {
-                p.balance = (p.balance ?? 0) + eachWinnerProffit;
+                p.balance = ((_a = p.balance) !== null && _a !== void 0 ? _a : 0) + eachWinnerProffit;
             }
             return p;
         });
@@ -83,9 +85,10 @@ const isExpectedPlayer = ({ uid }, game) => {
 };
 exports.isExpectedPlayer = isExpectedPlayer;
 const getMaxAmount = (lastRound, diference) => {
+    var _a;
     const lowerPlayerBalance = lastRound.getLowerPlayerBalance();
     const lowerPlayerDiference = lastRound.getHighestPersAmount() - lastRound.getPersAmount(lowerPlayerBalance.uid);
-    return (lowerPlayerBalance.balance ?? 0 - lowerPlayerDiference) + diference;
+    return ((_a = lowerPlayerBalance.balance) !== null && _a !== void 0 ? _a : 0 - lowerPlayerDiference) + diference;
 };
 const onCall = (player, game, diference) => {
     if (!player.balance || player.balance < diference) {
@@ -97,7 +100,7 @@ const onCall = (player, game, diference) => {
     lastRound.getActualStage().push(newTurn);
     lastRound.amount += Number(diference);
     player.balance = player.balance - diference;
-    (0, router_service_1.lobbyMsg)(players, 'DONE_ACTION', { ...newTurn.getGroupMsg(), action: 'CALL', balance: player.balance, tableAmount: lastRound.amount });
+    (0, router_service_1.lobbyMsg)(players, 'DONE_ACTION', Object.assign(Object.assign({}, newTurn.getGroupMsg()), { action: 'CALL', balance: player.balance, tableAmount: lastRound.amount }));
     nextPlayerMsg(game);
 };
 exports.onCall = onCall;
@@ -112,7 +115,7 @@ const onCheck = (player, game) => {
     if (actualStage.length == 0)
         player.lastRaised = true;
     actualStage.push(newTurn);
-    (0, router_service_1.lobbyMsg)(players, 'DONE_ACTION', { ...newTurn.getGroupMsg(), action: 'CHECK', balance: player.balance, tableAmount: lastRound.amount });
+    (0, router_service_1.lobbyMsg)(players, 'DONE_ACTION', Object.assign(Object.assign({}, newTurn.getGroupMsg()), { action: 'CHECK', balance: player.balance, tableAmount: lastRound.amount }));
     nextPlayerMsg(game);
 };
 exports.onCheck = onCheck;
@@ -133,7 +136,7 @@ const onRaise = (player, msgParsed, diference, game) => {
     player.balance -= Number(msgParsed.amount);
     lastRound.getActualStage().push(newTurn);
     lastRound.amount += Number(msgParsed.amount);
-    (0, router_service_1.lobbyMsg)(players, 'DONE_ACTION', { ...newTurn.getGroupMsg(), action: 'RAISE', playerAmount: Number(msgParsed.amount), balance: player.balance, tableAmount: lastRound.amount });
+    (0, router_service_1.lobbyMsg)(players, 'DONE_ACTION', Object.assign(Object.assign({}, newTurn.getGroupMsg()), { action: 'RAISE', playerAmount: Number(msgParsed.amount), balance: player.balance, tableAmount: lastRound.amount }));
     nextPlayerMsg(game);
 };
 exports.onRaise = onRaise;
@@ -153,7 +156,7 @@ const onBet = (player, msgParsed, game) => {
     player.balance -= Number(msgParsed.amount);
     lastRound.getActualStage().push(newTurn);
     lastRound.amount += Number(msgParsed.amount);
-    (0, router_service_1.lobbyMsg)(lastRound.players, 'DONE_ACTION', { ...newTurn.getGroupMsg(), action: 'BET', playerAmount: Number(msgParsed.amount), balance: player.balance, tableAmount: lastRound.amount });
+    (0, router_service_1.lobbyMsg)(lastRound.players, 'DONE_ACTION', Object.assign(Object.assign({}, newTurn.getGroupMsg()), { action: 'BET', playerAmount: Number(msgParsed.amount), balance: player.balance, tableAmount: lastRound.amount }));
     nextPlayerMsg(game);
 };
 exports.onBet = onBet;
@@ -162,17 +165,18 @@ const onFold = (player, game) => {
     const newTurn = new turn_1.default(player.uid, 'RAISE');
     const lastRound = game.getLastRound();
     const indexPlayer = lastRound.players.findIndex(({ uid }) => uid == player.uid);
-    (0, router_service_1.lobbyMsg)(lastRound.players, 'DONE_ACTION', { ...newTurn.getGroupMsg(), action: 'FOLD', tableAmount: lastRound.amount });
+    (0, router_service_1.lobbyMsg)(lastRound.players, 'DONE_ACTION', Object.assign(Object.assign({}, newTurn.getGroupMsg()), { action: 'FOLD', tableAmount: lastRound.amount }));
     lastRound.players.splice(indexPlayer, 1);
     nextPlayerMsg(game);
 };
 exports.onFold = onFold;
 const onExitGame = (player, lobby) => {
+    var _a;
     const game = lobby.game;
     if (!game)
         return;
     const lastRound = game.getLastRound();
-    lastRound.amount += Number(player.balance) ?? 0;
+    lastRound.amount += (_a = Number(player.balance)) !== null && _a !== void 0 ? _a : 0;
     game.activePlayers = game.activePlayers.filter(p => p.uid != player.uid);
     lastRound.players = lastRound.players.filter(p => p.uid != player.uid);
     /* FIXME: msg provisional, hay que arrgelarlo */
