@@ -44,7 +44,7 @@ class Game {
         });
     }
     getLastRound() {
-        return this.rounds.at(-1);
+        return this.rounds[this.rounds.length - 1];
     }
     getTurnPong(turn) {
         const players = this.getLastRound().players;

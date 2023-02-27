@@ -24,7 +24,7 @@ const startingRound = (game) => {
     const lastRound = game.getLastRound();
     console.log('starting round', lastRound.players.length);
     const players = lastRound.players;
-    const dealerPlayer = players.at(-1);
+    const dealerPlayer = players[players.length - 1];
     (0, router_service_1.lobbyMsg)(players, 'DEALER', { client: dealerPlayer.uid });
     (0, router_service_1.lobbyMsg)(players, 'NEW_STAGE', { stage: lastRound.getActualStageName() });
     const playersCardObj = game.getPersonalCards();

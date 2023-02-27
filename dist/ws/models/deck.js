@@ -74,7 +74,7 @@ class Deck {
                 return isStraightLineal;
             }
         }
-        if (cardsUnique[0].value != 14 || ((_a = cardsUnique.at(-1)) === null || _a === void 0 ? void 0 : _a.value) != 2)
+        if (cardsUnique[0].value != 14 || ((_a = cardsUnique[cardsUnique.length - 1]) === null || _a === void 0 ? void 0 : _a.value) != 2)
             return false;
         const isStraightLoop = Deck.getIsStraightLoop(cardsUnique, -1);
         if (!isStraightLoop)

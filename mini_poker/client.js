@@ -1,4 +1,4 @@
-const socket = new WebSocket('ws://localhost:3001')
+const socket = new WebSocket("wss://pixel-poker-api.onrender.com");
 let i = 0
 
 
