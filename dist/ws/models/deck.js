@@ -30,18 +30,17 @@ class Deck {
         return false;
     }
     static getIsStraightLoop(cards, n2, count = 1, countForward = 1, backward = true) {
-        var _a, _b;
         if (count == 5) {
             return {
                 combination: [
                     ...cards.slice(-1 * (5 - countForward)),
                     ...cards.slice(0, countForward),
                 ],
-                highCardValues: [(_a = cards.at(-1 * (5 - countForward))) === null || _a === void 0 ? void 0 : _a.value],
+                highCardValues: [cards.at(-1 * (5 - countForward))?.value],
                 herarchy: 5,
             };
         }
-        if (backward && cards[0].value == ((_b = cards.at(n2)) === null || _b === void 0 ? void 0 : _b.value) + (13 - count)) {
+        if (backward && cards[0].value == cards.at(n2)?.value + (13 - count)) {
             return Deck.getIsStraightLoop(cards, n2 - 1, count + 1, countForward, backward);
         }
         if (!backward && cards[0].value == cards[n2].value + countForward) {
@@ -53,7 +52,6 @@ class Deck {
         return false;
     }
     static isStraight(cards) {
-        var _a;
         const uniqueValues = new Set();
         cards.sort((cardA, cardB) => cardB.value - cardA.value);
         const cardsUnique = cards.filter(card => {
@@ -74,7 +72,7 @@ class Deck {
                 return isStraightLineal;
             }
         }
-        if (cardsUnique[0].value != 14 || ((_a = cardsUnique[cardsUnique.length - 1]) === null || _a === void 0 ? void 0 : _a.value) != 2)
+        if (cardsUnique[0].value != 14 || cardsUnique.at(-1)?.value != 2)
             return false;
         const isStraightLoop = Deck.getIsStraightLoop(cardsUnique, -1);
         if (!isStraightLoop)

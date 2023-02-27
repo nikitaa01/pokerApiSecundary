@@ -31,14 +31,14 @@ const menu = (msgParsed, wsClient, lobby) => {
             (0, wsEvents_controller_1.onExit)(wsClient, lobbies, lobby);
             break;
         case 'IN_GAME':
-            if (!(lobby === null || lobby === void 0 ? void 0 : lobby.game))
+            if (!lobby?.game)
                 throw new Error('No lobby in game');
             if (!(0, game_controller_1.isExpectedPlayer)(wsClient, lobby.game))
                 return;
             inGameMenu(msgParsed, wsClient, lobby.game);
             break;
         case 'FINISH':
-            if (!(lobby === null || lobby === void 0 ? void 0 : lobby.game))
+            if (!lobby?.game)
                 throw new Error('No lobby in game');
             (0, router_service_1.lobbyMsg)(lobby.game.getLastRound().players, 'FINISH', lobby.game.getLastRound().getWinner());
             break;
@@ -106,7 +106,7 @@ const router = (wsClient) => {
         if (!lobby)
             return;
         (0, wsEvents_controller_1.onExit)(wsClient, lobbies, lobby);
-        (lobby === null || lobby === void 0 ? void 0 : lobby.game) && (0, game_controller_1.onExitGame)(wsClient, lobby);
+        lobby?.game && (0, game_controller_1.onExitGame)(wsClient, lobby);
     });
     wsClient.on('close', () => {
         const lobby = lobbies.find(({ gid }) => gid == wsClient.gid);

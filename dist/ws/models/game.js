@@ -44,7 +44,7 @@ class Game {
         });
     }
     getLastRound() {
-        return this.rounds[this.rounds.length - 1];
+        return this.rounds.at(-1);
     }
     getTurnPong(turn) {
         const players = this.getLastRound().players;
@@ -68,9 +68,8 @@ class Game {
         return pongQueue;
     }
     getNextPlayerWarning() {
-        var _a;
         const turnPlayer = this.getTurnPlayer();
-        if ((turnPlayer === null || turnPlayer === void 0 ? void 0 : turnPlayer.lastRaised) === undefined)
+        if (turnPlayer?.lastRaised === undefined)
             return;
         const msg = this.getLastRound().getPotentialActions(turnPlayer.uid, turnPlayer.lastRaised);
         if (!msg)
@@ -79,9 +78,9 @@ class Game {
         const lastRound = this.getLastRound();
         const lowerPlayerBalance = lastRound.getLowerPlayerBalance();
         const lowerPlayerDiference = lastRound.getHighestPersAmount() - lastRound.getPersAmount(lowerPlayerBalance.uid);
-        const maxAmount = ((_a = lowerPlayerBalance.balance) !== null && _a !== void 0 ? _a : 0 - lowerPlayerDiference) + lastRound.getHighestPersAmount() - lastRound.getPersAmount(turnPlayer.uid);
+        const maxAmount = (lowerPlayerBalance.balance ?? 0 - lowerPlayerDiference) + lastRound.getHighestPersAmount() - lastRound.getPersAmount(turnPlayer.uid);
         return {
-            wsClient: turnPlayer, status: 'WAITING', msg: Object.assign(Object.assign({}, msg), { maxAmount, balance: turnPlayer.balance }),
+            wsClient: turnPlayer, status: 'WAITING', msg: { ...msg, maxAmount, balance: turnPlayer.balance },
         };
     }
     getPersonalCards() {
