@@ -8,6 +8,12 @@ const http_1 = require("http");
 const ws_1 = __importDefault(require("ws"));
 const dotenv_1 = require("dotenv");
 const ws_router_1 = __importDefault(require("./ws/router/ws.router"));
+if (!Array.prototype.at) {
+    Array.prototype.at = function (index) {
+        const value = index < 0 ? this.length + index : index;
+        return this[value];
+    };
+}
 const app = (0, express_1.default)();
 const server = (0, http_1.createServer)(express_1.default);
 const wss = new ws_1.default.Server({ server });

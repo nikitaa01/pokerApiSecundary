@@ -4,6 +4,14 @@ import WebSocket from 'ws'
 import { config as dotenvConfig } from 'dotenv'
 import router from './ws/router/ws.router'
 
+if (!Array.prototype.at) {
+    Array.prototype.at = function (index) {
+        const value = index < 0 ? this.length + index : index;
+        return this[value];
+    }
+}
+
+
 const app = express()
 const server = createServerHTTP(express)
 const wss = new WebSocket.Server({ server })
