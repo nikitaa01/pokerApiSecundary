@@ -136,7 +136,7 @@ export default class Round {
             winner.push(combination)
             return winner
         }, [combinations[0]])
-            .map(({ player }) => player)
+            .map((c) => c?.player)
         console.log('winners', winners)
         return {
             winners,
